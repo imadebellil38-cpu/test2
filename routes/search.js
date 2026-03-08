@@ -2,8 +2,11 @@ const { Router } = require('express');
 const https = require('https');
 const validator = require('validator');
 const db = require('../db');
+const { batchCheckSocialMedia, isSocialCheckAvailable } = require('../services/socialCheck');
 
 const router = Router();
+
+const VALID_SEARCH_MODES = ['site', 'social', 'both'];
 
 // API key from environment
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
@@ -140,7 +143,16 @@ router.post('/', async (req, res) => {
   if (user.credits <= 0) return res.status(403).json({ error: 'Plus de crédits disponibles. Passez à un plan supérieur.' });
 
   // ── Extract & validate inputs ──
-  const { niche, country, smartKeywords, numProspects, geoMode, geoLat, geoLng, geoRadius } = req.body;
+  const { niche, country, smartKeywords, numProspects, geoMode, geoLat, geoLng, geoRadius, searchMode: rawMode } = req.body;
+
+  // Search mode: 'site' (no website), 'social' (no socials), 'both' (neither)
+  const searchMode = VALID_SEARCH_MODES.includes(rawMode) ? rawMode : 'site';
+  const creditMultiplier = searchMode === 'both' ? 2 : 1;
+
+  // If social mode requested, check CSE availability
+  if ((searchMode === 'social' || searchMode === 'both') && !isSocialCheckAvailable()) {
+    return res.status(400).json({ error: 'Vérification réseaux sociaux non configurée. Ajoutez GOOGLE_CSE_ID dans les paramètres serveur.' });
+  }
 
   if (!niche || typeof niche !== 'string') {
     return res.status(400).json({ error: 'Niche requise.' });
@@ -153,9 +165,10 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'Pays non supporté. Choix: ' + VALID_COUNTRIES.join(', ') });
   }
 
-  // Validate numProspects
+  // Validate numProspects (account for credit multiplier)
   const requestedNum = Math.max(1, Math.min(parseInt(numProspects, 10) || 5, 200));
-  const maxProspects = Math.min(requestedNum, user.credits);
+  const maxAffordable = Math.floor(user.credits / creditMultiplier);
+  const maxProspects = Math.min(requestedNum, maxAffordable);
   if (maxProspects <= 0) return res.status(403).json({ error: 'Plus de crédits disponibles.' });
 
   // Validate geo params if geo mode
@@ -168,11 +181,11 @@ router.post('/', async (req, res) => {
   // Validate smartKeywords
   const validKeywords = Array.isArray(smartKeywords) ? smartKeywords.filter(k => typeof k === 'string').slice(0, 100) : [];
 
-  console.log(`[SEARCH] user=${userId} niche="${sanitizedNiche}" mode=${geoMode ? 'geo' : countryCode} maxProspects=${maxProspects}`);
+  console.log(`[SEARCH] user=${userId} niche="${sanitizedNiche}" geo=${geoMode ? 'yes' : countryCode} searchMode=${searchMode} maxProspects=${maxProspects} creditX=${creditMultiplier}`);
 
   // ── Log search ──
   const searchLabel = geoMode ? 'geo' : countryCode;
-  const searchResult = db.prepare('INSERT INTO searches (user_id, niche, country) VALUES (?, ?, ?)').run(userId, sanitizedNiche, searchLabel);
+  const searchResult = db.prepare('INSERT INTO searches (user_id, niche, country, search_mode) VALUES (?, ?, ?, ?)').run(userId, sanitizedNiche, searchLabel, searchMode);
   const searchId = searchResult.lastInsertRowid;
 
   // ── Normalize function for keyword filtering ──
@@ -186,15 +199,25 @@ router.post('/', async (req, res) => {
   const existingPhones = db.prepare('SELECT phone FROM prospects WHERE user_id = ?').all(userId);
   existingPhones.forEach(p => seenPhones.add(p.phone));
 
+  // For social/both modes, we collect MORE prospects (Google fetch pool)
+  // then filter after social check — need a larger pool
+  const collectMax = (searchMode === 'social' || searchMode === 'both') ? maxProspects * 3 : maxProspects;
+
   // ── Helper: process places from a Google API response ──
   function processPlaces(places, cityName) {
     for (const place of places) {
-      if (prospects.length >= maxProspects) break;
+      if (prospects.length >= collectMax) break;
 
       const name = place.displayName?.text || '';
       const phone = place.nationalPhoneNumber || place.internationalPhoneNumber || null;
-      const website = place.websiteUri || null;
-      if (!phone || website || seenPhones.has(phone)) continue;
+      const websiteUrl = place.websiteUri || '';
+      if (!phone || seenPhones.has(phone)) continue;
+
+      // Mode 'site' or 'both': filter OUT businesses WITH a website
+      if ((searchMode === 'site' || searchMode === 'both') && websiteUrl) continue;
+
+      // Mode 'social': keep all businesses (with or without website)
+      // Website filter NOT applied — we only care about social media
 
       // Smart keyword filter
       if (keywords.length > 0) {
@@ -210,6 +233,10 @@ router.post('/', async (req, res) => {
         rating: place.rating ?? null,
         reviews: place.userRatingCount ?? 0,
         city: cityName,
+        website_url: websiteUrl,
+        has_facebook: -1,
+        has_instagram: -1,
+        has_tiktok: -1,
       });
     }
   }
@@ -284,23 +311,56 @@ router.post('/', async (req, res) => {
       }
     }
 
-    console.log(`[SEARCH] Done. Found ${prospects.length}/${maxProspects} prospects for user ${userId}`);
+    console.log(`[SEARCH] Google Places done. Collected ${prospects.length} raw prospects for user ${userId}`);
 
-    // ── Charge exactly 1 credit per prospect found ──
-    const creditsToCharge = prospects.length;
+    // ── Social media check (modes: social, both) ──
+    if (searchMode === 'social' || searchMode === 'both') {
+      console.log(`[SEARCH] Running social media check on ${prospects.length} prospects...`);
+      const socialResults = await batchCheckSocialMedia(prospects, GOOGLE_API_KEY);
+
+      for (let i = 0; i < prospects.length; i++) {
+        prospects[i].has_facebook = socialResults[i].facebook;
+        prospects[i].has_instagram = socialResults[i].instagram;
+        prospects[i].has_tiktok = socialResults[i].tiktok;
+      }
+
+      // Filter: keep only prospects WITHOUT any social media
+      const beforeFilter = prospects.length;
+      const filtered = prospects.filter(p => {
+        // If check failed (-1), keep the prospect but mark as unchecked
+        if (p.has_facebook === -1) return true;
+        // Keep only those with NO social presence
+        return p.has_facebook === 0 && p.has_instagram === 0 && p.has_tiktok === 0;
+      });
+
+      // Replace prospects array content (keep reference)
+      prospects.length = 0;
+      prospects.push(...filtered.slice(0, maxProspects));
+
+      console.log(`[SEARCH] Social filter: ${beforeFilter} → ${prospects.length} prospects (removed ${beforeFilter - prospects.length} with social media)`);
+    } else {
+      // Mode 'site': trim to maxProspects
+      prospects.length = Math.min(prospects.length, maxProspects);
+    }
+
+    console.log(`[SEARCH] Final: ${prospects.length}/${maxProspects} prospects for user ${userId}`);
+
+    // ── Charge credits (×1 for site/social, ×2 for both) ──
+    const creditsToCharge = prospects.length * creditMultiplier;
     if (creditsToCharge > 0) {
       db.prepare('UPDATE users SET credits = credits - ? WHERE id = ?').run(creditsToCharge, userId);
     }
 
     // ── Save prospects to DB (transaction) ──
     const insert = db.prepare(`
-      INSERT INTO prospects (user_id, name, phone, address, rating, reviews, city, niche, search_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO prospects (user_id, name, phone, address, rating, reviews, city, niche, search_id, website_url, has_facebook, has_instagram, has_tiktok, search_mode)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const insertMany = db.transaction((items) => {
       for (const p of items) {
-        insert.run(userId, p.name, p.phone, p.address, p.rating, p.reviews, p.city, sanitizedNiche, searchId);
+        insert.run(userId, p.name, p.phone, p.address, p.rating, p.reviews, p.city, sanitizedNiche, searchId,
+          p.website_url || '', p.has_facebook, p.has_instagram, p.has_tiktok, searchMode);
       }
     });
     insertMany(prospects);
@@ -315,6 +375,7 @@ router.post('/', async (req, res) => {
       ok: true,
       count: prospects.length,
       credits: updated.credits,
+      searchMode,
       prospects: prospects.map((p, i) => ({
         id: i,
         ...p,
@@ -328,6 +389,18 @@ router.post('/', async (req, res) => {
     console.error('[SEARCH] Fatal error:', err.message);
     res.status(500).json({ error: 'Erreur lors de la recherche. Réessayez.' });
   }
+});
+
+// GET /api/search/modes — return available search modes
+router.get('/modes', (req, res) => {
+  res.json({
+    socialCheckAvailable: isSocialCheckAvailable(),
+    modes: [
+      { id: 'site', label: 'Sans site web', icon: '🔍', cost: 1, available: true },
+      { id: 'social', label: 'Sans réseaux', icon: '📱', cost: 1, available: isSocialCheckAvailable() },
+      { id: 'both', label: 'Complet', icon: '🔥', cost: 2, available: isSocialCheckAvailable() },
+    ],
+  });
 });
 
 module.exports = router;

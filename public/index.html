@@ -241,6 +241,39 @@
     .niche-custom { display: none; margin-top: .5rem; }
     .niche-custom.show { display: block; }
 
+    /* Search mode selector */
+    .search-modes { display: flex; gap: .6rem; margin-bottom: .25rem; }
+    .search-mode {
+      flex: 1; padding: .7rem .5rem; background: var(--surface);
+      border: 2px solid var(--border2); border-radius: 12px;
+      color: var(--muted); font-size: .78rem; font-weight: 700;
+      cursor: pointer; transition: all .2s; font-family: inherit;
+      text-align: center; display: flex; flex-direction: column; align-items: center; gap: .25rem;
+    }
+    .search-mode:hover { border-color: var(--cyan); color: var(--text2); }
+    .search-mode.on {
+      background: var(--cyan-glow); border-color: var(--cyan);
+      color: var(--cyan); box-shadow: 0 0 16px var(--cyan-glow);
+    }
+    .search-mode .sm-icon { font-size: 1.3rem; }
+    .search-mode .sm-label { font-size: .78rem; font-weight: 800; }
+    .search-mode .sm-cost { font-size: .68rem; font-weight: 600; opacity: .7; }
+    .search-mode.disabled {
+      opacity: .4; cursor: not-allowed; pointer-events: none;
+    }
+
+    /* Signal badges */
+    .badge-signals { display: flex; flex-wrap: wrap; gap: .3rem; }
+    .badge-sig {
+      display: inline-flex; align-items: center; gap: .2rem;
+      padding: .15rem .45rem; border-radius: 6px;
+      font-size: .65rem; font-weight: 700; white-space: nowrap;
+    }
+    .badge-nosite { background: rgba(231,76,60,.12); color: #e74c3c; }
+    .badge-nosocial { background: rgba(243,156,18,.12); color: #f39c12; }
+    .badge-fewreviews { background: rgba(241,196,15,.12); color: #f1c40f; }
+    .badge-unchecked { background: rgba(127,140,160,.1); color: var(--muted); }
+
     .ctry-row { display: flex; gap: .6rem; }
     .ctry {
       flex: 1; padding: .7rem .5rem;
@@ -808,8 +841,8 @@
       <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
       Outil de prospection intelligent
     </div>
-    <h1>Trouvez des entreprises<br><em>sans site web</em></h1>
-    <p>Recherche géolocalisée · téléphone vérifié · CRM intégré · Script IA personnalisé</p>
+    <h1>Trouvez des entreprises<br><em>sans présence digitale</em></h1>
+    <p>Sans site web · sans réseaux sociaux · téléphone vérifié · CRM intégré · Script IA</p>
   </div>
 
   <div class="card">
@@ -825,6 +858,28 @@
         <input class="inp" id="niche-custom-input" type="text" placeholder="Tape ta niche ici…" />
       </div>
       <input type="hidden" id="niche" />
+    </div>
+
+    <div class="field" style="margin-bottom:1.25rem">
+      <label>Type de recherche</label>
+      <div class="search-modes" id="search-modes">
+        <button type="button" class="search-mode on" data-mode="site" onclick="setSearchMode('site')">
+          <span class="sm-icon">🔍</span>
+          <span class="sm-label">Sans site web</span>
+          <span class="sm-cost">1 crédit / prospect</span>
+        </button>
+        <button type="button" class="search-mode" data-mode="social" id="mode-social" onclick="setSearchMode('social')">
+          <span class="sm-icon">📱</span>
+          <span class="sm-label">Sans réseaux</span>
+          <span class="sm-cost">1 crédit / prospect</span>
+        </button>
+        <button type="button" class="search-mode" data-mode="both" id="mode-both" onclick="setSearchMode('both')">
+          <span class="sm-icon">🔥</span>
+          <span class="sm-label">Complet</span>
+          <span class="sm-cost">2 crédits / prospect</span>
+        </button>
+      </div>
+      <div id="mode-hint" style="font-size:.7rem;color:var(--muted);margin-top:.3rem;"></div>
     </div>
 
     <div class="field" style="margin-bottom:1.5rem">
@@ -972,6 +1027,15 @@
             <option value="old">Ancien (200+)</option>
           </select>
         </div>
+        <div class="filter-wrap">
+          <span>Signaux</span>
+          <select class="sel" id="filter-signals" onchange="applyFilter()">
+            <option value="all">Tous</option>
+            <option value="nosite">🔴 Sans site</option>
+            <option value="nosocial">🟠 Sans réseaux</option>
+            <option value="fewreviews">🟡 &lt; 5 avis</option>
+          </select>
+        </div>
         <button class="btn-csv" onclick="exportCSV()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
@@ -991,6 +1055,7 @@
             <th>Adresse</th>
             <th class="sortable" id="th-rating"  onclick="sortBy('rating')">Note <span class="si" id="si-rating">&#8597;</span></th>
             <th class="sortable" id="th-reviews" onclick="sortBy('reviews')">Avis <span class="si" id="si-reviews">&#8597;</span></th>
+            <th>Signaux</th>
             <th class="sortable active" id="th-heat" onclick="sortBy('heat')">Chaleur <span class="si" id="si-heat">&#8595;</span></th>
             <th>Statut</th>
             <th></th>
@@ -1153,6 +1218,7 @@ const STATUS_LABEL  = { todo:'À appeler', called:'Appelé', nope:'Pas intéress
 const STATUS_CLASS  = { todo:'s-todo', called:'s-called', nope:'s-nope', client:'s-client' };
 
 let country         = 'fr';
+let searchMode      = 'site';
 let prospects       = [];
 let currentNiche    = '';
 let currentProspect = null;
@@ -1162,6 +1228,8 @@ let minStars        = 0;
 let filterStatus    = 'all';
 let filterAge       = 'all';
 let filterNiche     = 'all';
+let filterSignals   = 'all';
+let socialCheckAvailable = false;
 let filterSearchId  = null;
 let geoMode         = false;
 let geoLat          = null;
@@ -1347,12 +1415,14 @@ function clearSearchFilter() {
 /* ── Prospects slider ── */
 function updateProspectsSlider() {
   const slider = document.getElementById('prospects-slider');
-  const maxAllowed = userCredits || 1;
+  const multiplier = searchMode === 'both' ? 2 : 1;
+  const maxAllowed = Math.max(1, Math.floor((userCredits || 1) / multiplier));
   slider.max = maxAllowed;
   if (parseInt(slider.value) > maxAllowed) slider.value = maxAllowed;
   const val = parseInt(slider.value);
+  const creditsCost = val * multiplier;
   document.getElementById('prospects-count').textContent = val;
-  document.getElementById('credits-cost').textContent = val;
+  document.getElementById('credits-cost').textContent = creditsCost;
   document.getElementById('prospects-max-label').textContent = maxAllowed + ' prospects (max)';
 }
 
@@ -1405,6 +1475,33 @@ function onNicheSelect(val) {
 }
 
 initNicheCategories();
+
+/* ── Search Mode ── */
+function setSearchMode(mode) {
+  searchMode = mode;
+  document.querySelectorAll('.search-mode').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+  const hints = {
+    site: 'Trouve les entreprises qui n\'ont pas de site internet.',
+    social: 'Vérifie Facebook, Instagram & TikTok pour chaque entreprise.',
+    both: 'Double vérification : ni site web, ni réseaux sociaux. Coût ×2.',
+  };
+  document.getElementById('mode-hint').textContent = hints[mode] || '';
+  updateProspectsSlider();
+}
+
+function checkSearchModes() {
+  fetch('/api/search/modes', { headers: AUTH_HEADERS })
+    .then(r => r.json())
+    .then(data => {
+      socialCheckAvailable = data.socialCheckAvailable;
+      if (!socialCheckAvailable) {
+        document.getElementById('mode-social').classList.add('disabled');
+        document.getElementById('mode-both').classList.add('disabled');
+        document.getElementById('mode-hint').textContent = '⚠️ Modes réseaux indisponibles — GOOGLE_CSE_ID non configuré.';
+      }
+    })
+    .catch(() => {});
+}
 
 /* ── Country / Geolocation ── */
 function setCountry(c) {
@@ -1516,7 +1613,8 @@ async function runSearch() {
 
   const numProspects = parseInt(document.getElementById('prospects-slider').value);
   const geoLabel = geoMode ? ` autour de vous (${geoRadius} km)` : '';
-  setLoader(true, `Recherche « ${niche} » en cours…${geoLabel}`, `Recherche de ${numProspects} prospect${numProspects > 1 ? 's' : ''}. Cela peut prendre 1 à 3 minutes.`);
+  const modeLabel = searchMode === 'social' ? ' + vérification réseaux sociaux' : searchMode === 'both' ? ' + vérification complète' : '';
+  setLoader(true, `Recherche « ${niche} » en cours…${geoLabel}`, `Recherche de ${numProspects} prospect${numProspects > 1 ? 's' : ''}${modeLabel}. Cela peut prendre 1 à 3 minutes.`);
 
   document.getElementById('res').style.display = 'none';
   document.getElementById('empty').classList.remove('on');
@@ -1536,6 +1634,7 @@ async function runSearch() {
         country,
         smartKeywords: smartKw,
         numProspects: parseInt(document.getElementById('prospects-slider').value),
+        searchMode,
         geoMode,
         geoLat,
         geoLng,
@@ -1592,6 +1691,18 @@ function renderHeat(p) {
 }
 
 /* ── Table ── */
+function renderSignals(p) {
+  let badges = '';
+  if (!p.website_url) badges += '<span class="badge-sig badge-nosite">🔴 Pas de site</span>';
+  if (p.has_facebook === 0 && p.has_instagram === 0 && p.has_tiktok === 0) {
+    badges += '<span class="badge-sig badge-nosocial">🟠 Pas de réseaux</span>';
+  } else if (p.has_facebook === -1 && p.has_instagram === -1 && p.has_tiktok === -1) {
+    badges += '<span class="badge-sig badge-unchecked">? Non vérifié</span>';
+  }
+  if ((p.reviews || 0) < 5) badges += '<span class="badge-sig badge-fewreviews">🟡 &lt; 5 avis</span>';
+  return '<div class="badge-signals">' + (badges || '<span style="color:var(--muted);font-size:.65rem">—</span>') + '</div>';
+}
+
 function renderTable() {
   let list = prospects.filter(p => {
     if (filterSearchId && p.search_id !== filterSearchId) return false;
@@ -1601,6 +1712,10 @@ function renderTable() {
     if (filterAge === 'new' && (p.reviews || 0) >= 50) return false;
     if (filterAge === 'mid' && ((p.reviews || 0) < 50 || (p.reviews || 0) >= 200)) return false;
     if (filterAge === 'old' && (p.reviews || 0) < 200) return false;
+    // Signal filter
+    if (filterSignals === 'nosite' && p.website_url) return false;
+    if (filterSignals === 'nosocial' && !(p.has_facebook === 0 && p.has_instagram === 0 && p.has_tiktok === 0)) return false;
+    if (filterSignals === 'fewreviews' && (p.reviews || 0) >= 5) return false;
     return true;
   });
   if (sortCol) {
@@ -1622,6 +1737,7 @@ function renderTable() {
       <td class="c-addr">${esc(p.address)}</td>
       <td>${renderStars(p.rating)}</td>
       <td>${p.reviews > 0 ? p.reviews.toLocaleString('fr-FR') : '<span class="nd">—</span>'}</td>
+      <td>${renderSignals(p)}</td>
       <td>${renderHeat(p)}</td>
       <td><span class="status ${STATUS_CLASS[p.status]}" onclick="cycleStatus(${p.id},event)">${STATUS_LABEL[p.status]}</span></td>
       <td>
@@ -1660,6 +1776,7 @@ function applyFilter() {
   minStars = parseFloat(document.getElementById('min-stars').value) || 0;
   filterStatus = document.getElementById('filter-status').value;
   filterAge = document.getElementById('filter-age').value;
+  filterSignals = document.getElementById('filter-signals').value;
   const nicheVal = document.getElementById('filter-niche').value;
   if (nicheVal !== filterNiche) {
     filterNiche = nicheVal;
@@ -1946,14 +2063,19 @@ function esc(s) {
 /* ── Export CSV ── */
 function exportCSV() {
   if (!prospects.length) { alert('Aucun prospect à exporter.'); return; }
-  const header = ['#','Nom','Téléphone','Adresse','Ville','Note','Nb d\'avis','Chaleur','Statut','Notes CRM','Rappel'];
+  const header = ['#','Nom','Téléphone','Adresse','Ville','Note','Nb d\'avis','Site web','Facebook','Instagram','TikTok','Chaleur','Statut','Notes CRM','Rappel'];
   const heatLabels = {3:'Très chaud',2:'Chaud',1:'Tiède',0:'Froid'};
+  const socialLabel = v => v === 1 ? 'Oui' : v === 0 ? 'Non' : '?';
   const rows = prospects.map((p,i) => {
     const s = heatScore(p);
     return [
       i+1, p.name, p.phone, p.address, p.city || '',
       p.rating != null ? p.rating.toFixed(1) : '',
       p.reviews,
+      p.website_url || 'Non',
+      socialLabel(p.has_facebook),
+      socialLabel(p.has_instagram),
+      socialLabel(p.has_tiktok),
       heatLabels[s] || '\u2014',
       STATUS_LABEL[p.status],
       p.notes || '',
@@ -2010,6 +2132,8 @@ document.getElementById('niche-custom-input').addEventListener('keydown', e => {
 loadUser();
 loadProspects();
 loadSearchHistory();
+checkSearchModes();
+setSearchMode('site');
 </script>
 </body>
 </html>

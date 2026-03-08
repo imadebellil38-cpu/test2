@@ -63,6 +63,13 @@ const migrations = [
   `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_referral_code ON users(referral_code)`,
   `CREATE INDEX IF NOT EXISTS idx_users_referral ON users(referred_by)`,
   `UPDATE users SET plan = 'enterprise' WHERE plan = 'business'`,
+  // ── Search modes & social check ──
+  `ALTER TABLE prospects ADD COLUMN website_url TEXT DEFAULT ''`,
+  `ALTER TABLE prospects ADD COLUMN has_facebook INTEGER DEFAULT -1`,
+  `ALTER TABLE prospects ADD COLUMN has_instagram INTEGER DEFAULT -1`,
+  `ALTER TABLE prospects ADD COLUMN has_tiktok INTEGER DEFAULT -1`,
+  `ALTER TABLE prospects ADD COLUMN search_mode TEXT DEFAULT 'site'`,
+  `ALTER TABLE searches ADD COLUMN search_mode TEXT DEFAULT 'site'`,
 ];
 
 for (const sql of migrations) {
