@@ -885,7 +885,7 @@
         <button type="button" class="search-mode" data-mode="owners" id="mode-owners" onclick="setSearchMode('owners')">
           <span class="sm-icon">👤</span>
           <span class="sm-label">Noms des gérants</span>
-          <span class="sm-cost">3 crédits / recherche</span>
+          <span class="sm-cost">1 crédit / prospect</span>
         </button>
       </div>
       <div id="mode-hint" style="font-size:.7rem;color:var(--muted);margin-top:.3rem;"></div>
@@ -1384,7 +1384,7 @@ async function loadSearchHistory() {
       const date = new Date(s.created_at);
       const ago = timeAgo(date);
       const active = filterSearchId === s.id ? 'background:var(--cyan-glow2);border-color:var(--cyan);' : '';
-      const modeLabels = { site: '🔍 Sans site', social: '📱 Sans réseaux', both: '🔥 Sans site + réseaux' };
+      const modeLabels = { site: '🔍 Sans site', social: '📱 Sans réseaux', both: '🔥 Sans site + réseaux', owners: '👤 Noms gérants' };
       const modeTag = modeLabels[s.search_mode] || '🔍 Sans site';
       return `<div onclick="filterBySearch(${s.id},'${esc(s.niche)}')" style="display:flex;justify-content:space-between;align-items:center;padding:.55rem .8rem;border-radius:8px;border:1px solid var(--border2);cursor:pointer;transition:all .15s;${active}" onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='${filterSearchId === s.id ? 'var(--cyan)' : 'var(--border2)'}'">`
         + `<div style="display:flex;align-items:center;gap:.6rem;">`
@@ -1504,12 +1504,9 @@ function setSearchMode(mode) {
     site: 'Trouve les entreprises qui n\'ont pas de site internet.',
     social: 'Trouve les entreprises qui n\'ont pas de réseaux sociaux (Facebook, Instagram, TikTok).',
     both: 'Trouve les entreprises sans site web ET sans réseaux sociaux. Coût ×2.',
-    owners: 'Analyse les noms d\'entreprise de vos prospects existants pour extraire les noms des gérants. Coût fixe : 3 crédits.',
+    owners: 'Recherche des entreprises dont le nom du gérant est identifiable. 1 crédit par prospect trouvé.',
   };
   document.getElementById('mode-hint').textContent = hints[mode] || '';
-  // Hide/show prospect slider for owners mode (not needed)
-  const sliderSection = document.getElementById('slider-section');
-  if (sliderSection) sliderSection.style.display = mode === 'owners' ? 'none' : '';
   updateProspectsSlider();
 }
 
@@ -1604,9 +1601,6 @@ function setLoader(show, title, sub) {
 
 /* ── SEARCH (server-side) ── */
 async function runSearch() {
-  // ── Owners mode: extract names from existing prospects ──
-  if (searchMode === 'owners') { await runOwnerExtraction(); return; }
-
   const niche = document.getElementById('niche').value.trim();
   hideAlert();
   if (!niche) return showAlert("Veuillez saisir une niche ou un secteur d'activité.");
@@ -1640,7 +1634,7 @@ async function runSearch() {
 
   const numProspects = parseInt(document.getElementById('prospects-slider').value);
   const geoLabel = geoMode ? ` autour de vous (${geoRadius} km)` : '';
-  const modeLabel = searchMode === 'social' ? ' + vérification réseaux sociaux' : searchMode === 'both' ? ' + vérification complète' : '';
+  const modeLabel = searchMode === 'social' ? ' + vérification réseaux sociaux' : searchMode === 'both' ? ' + vérification complète' : searchMode === 'owners' ? ' + extraction noms gérants' : '';
   setLoader(true, `Recherche « ${niche} » en cours…${geoLabel}`, `Recherche de ${numProspects} prospect${numProspects > 1 ? 's' : ''}${modeLabel}. Cela peut prendre 1 à 3 minutes.`);
 
   document.getElementById('res').style.display = 'none';
@@ -2106,48 +2100,7 @@ function esc(s) {
 }
 
 /* ── Export CSV ── */
-async function runOwnerExtraction() {
-  hideAlert();
-  // Get all prospects without owner names
-  const missing = prospects.filter(p => !p.owner_name);
-  if (!missing.length) { showAlert('Tous vos prospects ont déjà un nom de gérant. ✅'); return; }
-  if (!prospects.length) { showAlert('Aucun prospect en base. Lancez d\'abord une recherche classique.'); return; }
-
-  if (userCredits < 3) { showAlert('Crédits insuffisants (3 requis).'); return; }
-
-  const btn = document.getElementById('btn-go');
-  btn.disabled = true;
-  setLoader(true, 'Extraction des noms de gérants…', `Analyse de ${missing.length} noms d'entreprise par l'IA`);
-
-  try {
-    const res = await fetch('/api/pitch/extract-owners', {
-      method: 'POST',
-      headers: AUTH_HEADERS,
-      body: JSON.stringify({ prospects: missing.map(p => ({ id: p.id, name: p.name, city: p.city })) }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Erreur');
-
-    let found = 0;
-    if (data.results) {
-      data.results.forEach(r => {
-        if (r.owner_name) {
-          const p = prospects.find(pp => pp.id === r.id);
-          if (p) { p.owner_name = r.owner_name; found++; }
-        }
-      });
-    }
-    renderTable();
-    setLoader(false);
-    showAlert(`✅ ${found} gérant(s) trouvé(s) sur ${missing.length} prospects analysés. 3 crédits utilisés.`, false);
-    fetchCredits();
-  } catch (err) {
-    setLoader(false);
-    showAlert('❌ ' + err.message);
-  } finally {
-    btn.disabled = false;
-  }
-}
+/* runOwnerExtraction removed — owners mode now uses normal search flow */
 
 function exportCSV() {
   if (!prospects.length) { alert('Aucun prospect à exporter.'); return; }

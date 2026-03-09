@@ -7,7 +7,43 @@ const { batchFindOwners } = require('../services/pappers');
 
 const router = Router();
 
-const VALID_SEARCH_MODES = ['site', 'social', 'both'];
+const VALID_SEARCH_MODES = ['site', 'social', 'both', 'owners'];
+
+// Anthropic API key for owner name extraction (owners mode)
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
+
+function callClaudeRaw(prompt, maxTokens = 2000) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: maxTokens,
+      messages: [{ role: 'user', content: prompt }],
+    });
+    const options = {
+      hostname: 'api.anthropic.com',
+      path: '/v1/messages',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+        'Content-Length': Buffer.byteLength(body),
+      },
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try { resolve({ status: res.statusCode, body: JSON.parse(data) }); }
+        catch (e) { reject(new Error('Réponse invalide Anthropic')); }
+      });
+    });
+    req.on('error', reject);
+    req.setTimeout(60000, () => { req.destroy(); reject(new Error('Anthropic API timeout')); });
+    req.write(body);
+    req.end();
+  });
+}
 
 // API key from environment
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
@@ -146,13 +182,18 @@ router.post('/', async (req, res) => {
   // ── Extract & validate inputs ──
   const { niche, country, smartKeywords, numProspects, geoMode, geoLat, geoLng, geoRadius, searchMode: rawMode } = req.body;
 
-  // Search mode: 'site' (no website), 'social' (no socials), 'both' (neither)
+  // Search mode: 'site' (no website), 'social' (no socials), 'both' (neither), 'owners' (find owner names)
   const searchMode = VALID_SEARCH_MODES.includes(rawMode) ? rawMode : 'site';
   const creditMultiplier = searchMode === 'both' ? 2 : 1;
 
   // If social mode requested, check CSE availability
   if ((searchMode === 'social' || searchMode === 'both') && !isSocialCheckAvailable()) {
     return res.status(400).json({ error: 'Vérification réseaux sociaux non configurée. Ajoutez GOOGLE_CSE_ID dans les paramètres serveur.' });
+  }
+
+  // If owners mode requested, check Anthropic API key
+  if (searchMode === 'owners' && !ANTHROPIC_API_KEY) {
+    return res.status(400).json({ error: 'Clé Anthropic API non configurée. Ajoutez ANTHROPIC_API_KEY dans les paramètres serveur.' });
   }
 
   if (!niche || typeof niche !== 'string') {
@@ -200,8 +241,8 @@ router.post('/', async (req, res) => {
   const existingPhones = db.prepare('SELECT phone FROM prospects WHERE user_id = ?').all(userId);
   existingPhones.forEach(p => seenPhones.add(p.phone));
 
-  // Collect target: same as maxProspects (no over-fetch needed — we sort, not filter)
-  const collectMax = maxProspects;
+  // Collect target: owners mode over-fetches ×3 since we'll filter by found names
+  const collectMax = searchMode === 'owners' ? Math.min(maxProspects * 3, 200) : maxProspects;
 
   // ── Helper: process places from a Google API response ──
   function processPlaces(places, cityName) {
@@ -216,8 +257,8 @@ router.post('/', async (req, res) => {
       // Mode 'site' or 'both': filter OUT businesses WITH a website
       if ((searchMode === 'site' || searchMode === 'both') && websiteUrl) continue;
 
-      // Mode 'social': keep all businesses (with or without website)
-      // Website filter NOT applied — we only care about social media
+      // Mode 'social' or 'owners': keep all businesses (with or without website)
+      // Website filter NOT applied
 
       // Smart keyword filter
       if (keywords.length > 0) {
@@ -315,7 +356,6 @@ router.post('/', async (req, res) => {
 
     // ── Social media check (modes: social, both) ──
     if (searchMode === 'social' || searchMode === 'both') {
-      // Check up to maxProspects (no need for big pool — we keep all results)
       const toCheck = prospects.slice(0, maxProspects);
       console.log(`[SEARCH] Running social media check on ${toCheck.length} prospects...`);
       const socialResults = await batchCheckSocialMedia(toCheck, GOOGLE_API_KEY);
@@ -326,20 +366,77 @@ router.post('/', async (req, res) => {
         toCheck[i].has_tiktok = socialResults[i].tiktok;
       }
 
-      // Sort: prospects WITHOUT social media first (best prospects on top)
       toCheck.sort((a, b) => {
         const scoreA = (a.has_facebook === 0 ? 0 : 1) + (a.has_instagram === 0 ? 0 : 1) + (a.has_tiktok === 0 ? 0 : 1);
         const scoreB = (b.has_facebook === 0 ? 0 : 1) + (b.has_instagram === 0 ? 0 : 1) + (b.has_tiktok === 0 ? 0 : 1);
-        return scoreA - scoreB; // fewer social = better = first
+        return scoreA - scoreB;
       });
 
-      const noSocial = toCheck.filter(p => p.has_facebook === 0 && p.has_instagram === 0 && p.has_tiktok === 0).length;
-
-      // Replace prospects array
       prospects.length = 0;
       prospects.push(...toCheck);
+      console.log(`[SEARCH] Social check done: ${prospects.length} prospects`);
 
-      console.log(`[SEARCH] Social check done: ${noSocial}/${toCheck.length} without social media (sorted best first)`);
+    } else if (searchMode === 'owners') {
+      // ── OWNERS MODE: Extract owner names from business names via Claude ──
+      console.log(`[SEARCH] Owners mode: analyzing ${prospects.length} business names for owner names...`);
+
+      // Process in batches of 30
+      const batchSize = 30;
+      for (let i = 0; i < prospects.length; i += batchSize) {
+        const batch = prospects.slice(i, i + batchSize);
+        const listText = batch.map((p, idx) => `${idx + 1}. "${p.name}" (${p.city})`).join('\n');
+
+        const prompt = `Tu es un expert en identification de noms de propriétaires/gérants à partir de noms d'entreprises françaises.
+
+Analyse ces noms d'entreprises et extrais le nom du gérant/propriétaire quand il est VISIBLE dans le nom de l'entreprise.
+
+Règles strictes :
+- "Boulangerie Martin" → "Martin" (nom de famille dans le nom)
+- "Garage Dupont et Fils" → "Dupont" (nom de famille visible)
+- "Pizzeria Da Luigi" → "Luigi" (prénom visible)
+- "Coiffure Sandra" → "Sandra" (prénom visible)
+- "Plomberie J.Durand" → "J. Durand" (initiale + nom)
+- "Restaurant Le Petit Jardin" → "" (pas de nom de personne)
+- "Auto Ecole 2000" → "" (pas de nom de personne)
+- "Carrefour Market" → "" (chaîne/marque, pas un gérant)
+
+Entreprises à analyser :
+${listText}
+
+Réponds UNIQUEMENT en JSON, un tableau avec le numéro et le nom trouvé (vide si aucun) :
+[{"n":1,"name":"Martin"},{"n":2,"name":""},...]`;
+
+        try {
+          const result = await callClaudeRaw(prompt, 2000);
+          if (result.status === 200 && result.body.content?.[0]?.text) {
+            const text = result.body.content[0].text;
+            const jsonMatch = text.match(/\[[\s\S]*\]/);
+            if (jsonMatch) {
+              const parsed = JSON.parse(jsonMatch[0]);
+              for (const item of parsed) {
+                const idx = (item.n || 0) - 1;
+                if (idx >= 0 && idx < batch.length && item.name) {
+                  batch[idx].owner_name = item.name.trim();
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.error(`[SEARCH] Claude owner extraction batch error:`, err.message);
+        }
+
+        if (i + batchSize < prospects.length) await delay(300);
+      }
+
+      // Filter: only keep prospects WHERE an owner name was found
+      const withNames = prospects.filter(p => p.owner_name && p.owner_name.length > 0);
+      const totalFound = withNames.length;
+      console.log(`[SEARCH] Owners mode: found ${totalFound}/${prospects.length} with owner names`);
+
+      // Trim to maxProspects
+      prospects.length = 0;
+      prospects.push(...withNames.slice(0, maxProspects));
+
     } else {
       // Mode 'site': trim to maxProspects
       prospects.length = Math.min(prospects.length, maxProspects);
@@ -347,8 +444,8 @@ router.post('/', async (req, res) => {
 
     console.log(`[SEARCH] Final: ${prospects.length}/${maxProspects} prospects for user ${userId}`);
 
-    // ── Owner name lookup via Pappers ──
-    if (process.env.PAPPERS_API_KEY) {
+    // ── Owner name lookup via Pappers (for non-owners modes) ──
+    if (searchMode !== 'owners' && process.env.PAPPERS_API_KEY) {
       console.log(`[SEARCH] Looking up owner names via Pappers for ${prospects.length} prospects...`);
       try {
         const ownerNames = await batchFindOwners(prospects);
@@ -362,7 +459,8 @@ router.post('/', async (req, res) => {
       }
     }
 
-    // ── Charge credits (×1 for site/social, ×2 for both) ──
+    // ── Charge credits ──
+    // owners mode: only charge if names found; site/social = ×1, both = ×2
     const creditsToCharge = prospects.length * creditMultiplier;
     if (creditsToCharge > 0) {
       db.prepare('UPDATE users SET credits = credits - ? WHERE id = ?').run(creditsToCharge, userId);
@@ -416,6 +514,7 @@ router.get('/modes', (req, res) => {
       { id: 'site', label: 'Sans site web', icon: '🔍', cost: 1, available: true },
       { id: 'social', label: 'Sans réseaux', icon: '📱', cost: 1, available: isSocialCheckAvailable() },
       { id: 'both', label: 'Complet', icon: '🔥', cost: 2, available: isSocialCheckAvailable() },
+      { id: 'owners', label: 'Noms des gérants', icon: '👤', cost: 1, available: !!ANTHROPIC_API_KEY },
     ],
   });
 });

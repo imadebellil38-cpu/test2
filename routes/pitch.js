@@ -256,7 +256,27 @@ router.post('/keywords', async (req, res) => {
   }
 });
 
-// POST /api/pitch/extract-owners — extract owner names from business names using Claude
+// ── Google Custom Search helper ──
+const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
+const GOOGLE_CSE_ID = process.env.GOOGLE_CSE_ID;
+
+function googleSearch(query) {
+  return new Promise((resolve, reject) => {
+    const params = new URLSearchParams({ key: GOOGLE_API_KEY, cx: GOOGLE_CSE_ID, q: query, num: '3', lr: 'lang_fr' });
+    const url = `https://customsearch.googleapis.com/customsearch/v1?${params}`;
+    https.get(url, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        try { resolve(JSON.parse(data)); } catch { resolve({ items: [] }); }
+      });
+    }).on('error', () => resolve({ items: [] }));
+  });
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// POST /api/pitch/extract-owners — extract owner names (2 phases: name analysis + Google search)
 router.post('/extract-owners', async (req, res) => {
   const { prospects } = req.body;
 
@@ -277,10 +297,15 @@ router.post('/extract-owners', async (req, res) => {
     return res.status(400).json({ error: 'Clé API Anthropic non configurée.' });
   }
 
-  // Build the list for Claude
-  const list = prospects.map((p, i) => `${i + 1}. "${p.name}" (${p.city || '?'})`).join('\n');
+  const updateStmt = db.prepare('UPDATE prospects SET owner_name = ? WHERE id = ? AND user_id = ?');
+  const results = [];
 
-  const prompt = `Voici une liste de noms d'entreprises/commerces. Pour chacun, essaie d'extraire le nom du gérant/propriétaire SI il est visible dans le nom de l'entreprise.
+  try {
+    // ════════════════════════════════════════
+    // PHASE 1 — Extract from business names
+    // ════════════════════════════════════════
+    const list = prospects.map((p, i) => `${i + 1}. "${p.name}" (${p.city || '?'})`).join('\n');
+    const prompt1 = `Voici une liste de noms d'entreprises/commerces. Pour chacun, essaie d'extraire le nom du gérant/propriétaire SI il est visible dans le nom de l'entreprise.
 
 Règles :
 - Si le nom d'entreprise contient clairement un prénom+nom de personne (ex: "Bucci Stéphane", "PELLEGRIN Dylan PLOMBIER"), extrais-le au format "Prénom Nom"
@@ -295,41 +320,102 @@ Pas de texte avant/après, juste le JSON.
 Liste :
 ${list}`;
 
-  try {
-    const result = await callClaudeRaw(apiKey, prompt, 2000);
-    if (result.status !== 200) {
-      const errMsg = result.body?.error?.message || 'Erreur API Anthropic';
-      return res.status(result.status).json({ error: errMsg });
+    const r1 = await callClaudeRaw(apiKey, prompt1, 2000);
+    if (r1.status !== 200) {
+      const errMsg = r1.body?.error?.message || 'Erreur API Anthropic';
+      return res.status(r1.status).json({ error: errMsg });
     }
 
-    const text = result.body?.content?.[0]?.text || '[]';
-    // Extract JSON from response (Claude might wrap it in markdown)
-    const jsonMatch = text.match(/\[[\s\S]*\]/);
-    if (!jsonMatch) {
-      return res.status(500).json({ error: 'Réponse IA invalide.' });
-    }
+    const text1 = r1.body?.content?.[0]?.text || '[]';
+    const match1 = text1.match(/\[[\s\S]*\]/);
+    let parsed1 = [];
+    if (match1) { try { parsed1 = JSON.parse(match1[0]); } catch {} }
 
-    let parsed;
-    try { parsed = JSON.parse(jsonMatch[0]); } catch { return res.status(500).json({ error: 'JSON invalide.' }); }
-
-    // Update DB for each found name
-    const updateStmt = db.prepare('UPDATE prospects SET owner_name = ? WHERE id = ? AND user_id = ?');
-    const results = [];
-    for (const item of parsed) {
+    // Apply phase 1 results
+    const stillMissing = []; // prospects where no name found
+    for (const item of parsed1) {
       const idx = item.i - 1;
       if (idx >= 0 && idx < prospects.length) {
         const ownerName = (item.n || '').trim().substring(0, 200);
         if (ownerName) {
           updateStmt.run(ownerName, prospects[idx].id, req.user.id);
+          results.push({ id: prospects[idx].id, owner_name: ownerName });
+        } else {
+          stillMissing.push({ idx, prospect: prospects[idx] });
         }
-        results.push({ id: prospects[idx].id, owner_name: ownerName });
+      }
+    }
+    // Prospects not in parsed1 response
+    const foundIdxs = new Set(parsed1.map(it => it.i - 1));
+    for (let i = 0; i < prospects.length; i++) {
+      if (!foundIdxs.has(i)) stillMissing.push({ idx: i, prospect: prospects[i] });
+    }
+
+    // ════════════════════════════════════════
+    // PHASE 2 — Claude deep search for remaining
+    // ════════════════════════════════════════
+    const toSearch = stillMissing.slice(0, 50); // max 50 per batch
+
+    if (toSearch.length > 0) {
+      const listP2 = toSearch.map((s, i) =>
+        `${i + 1}. "${s.prospect.name}" — ${s.prospect.city || '?'}`
+      ).join('\n');
+
+      const prompt2 = `Tu es un expert des entreprises françaises. Voici une liste de commerces/entreprises. Pour chacun, essaie de trouver le nom du gérant, propriétaire ou dirigeant.
+
+Tu peux utiliser tes connaissances sur :
+- Les registres d'entreprises françaises (societe.com, pappers.fr, infogreffe)
+- Les franchises connues (qui est le franchisé local ?)
+- Les indices dans le nom ou la ville
+- Les entreprises connues publiquement
+
+Règles STRICTES :
+- Si tu CONNAIS le nom du dirigeant de cette entreprise, donne-le au format "Prénom Nom"
+- Si tu n'es PAS SÛR à 90%+, mets "" — ne devine JAMAIS
+- Ne confonds pas le nom de l'enseigne avec le dirigeant (ex: "Franck Provost" est une marque, pas forcément le gérant local)
+- Pour les franchises nationales (Dessange, Franck Provost, etc), mets "" car le gérant local est inconnu
+
+Réponds UNIQUEMENT avec un JSON array: [{"i":1,"n":"Prénom Nom"},{"i":2,"n":""}]
+
+Entreprises :
+${listP2}`;
+
+      const r2 = await callClaudeRaw(apiKey, prompt2, 3000);
+      if (r2.status === 200) {
+        const text2 = r2.body?.content?.[0]?.text || '[]';
+        const match2 = text2.match(/\[[\s\S]*\]/);
+        let parsed2 = [];
+        if (match2) { try { parsed2 = JSON.parse(match2[0]); } catch {} }
+
+        for (const item of parsed2) {
+          const si = item.i - 1;
+          if (si >= 0 && si < toSearch.length) {
+            const ownerName = (item.n || '').trim().substring(0, 200);
+            const prospectIdx = toSearch[si].idx;
+            if (ownerName) {
+              updateStmt.run(ownerName, prospects[prospectIdx].id, req.user.id);
+            }
+            results.push({ id: prospects[prospectIdx].id, owner_name: ownerName });
+          }
+        }
       }
     }
 
-    // Deduct 3 credits
-    db.prepare('UPDATE users SET credits = credits - 3 WHERE id = ?').run(req.user.id);
+    // Add empty results for truly unfound ones
+    const foundIds = new Set(results.map(r => r.id));
+    for (const p of prospects) {
+      if (!foundIds.has(p.id)) results.push({ id: p.id, owner_name: '' });
+    }
 
-    res.json({ results, creditsUsed: 3 });
+    // Only deduct credits if at least 1 name was found
+    const totalFound = results.filter(r => r.owner_name).length;
+    const creditsUsed = totalFound > 0 ? 3 : 0;
+    if (creditsUsed > 0) {
+      db.prepare('UPDATE users SET credits = credits - 3 WHERE id = ?').run(req.user.id);
+    }
+
+    const phase2Count = toSearch.length;
+    res.json({ results, creditsUsed, phase2Searched: phase2Count, totalFound });
   } catch (err) {
     console.error('[EXTRACT-OWNERS] Error:', err.message);
     res.status(500).json({ error: 'Erreur lors de l\'extraction. Réessayez.' });
