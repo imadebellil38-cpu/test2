@@ -882,6 +882,11 @@
           <span class="sm-label">Sans site + réseaux</span>
           <span class="sm-cost">2 crédits / prospect</span>
         </button>
+        <button type="button" class="search-mode" data-mode="owners" id="mode-owners" onclick="setSearchMode('owners')">
+          <span class="sm-icon">👤</span>
+          <span class="sm-label">Noms des gérants</span>
+          <span class="sm-cost">3 crédits / recherche</span>
+        </button>
       </div>
       <div id="mode-hint" style="font-size:.7rem;color:var(--muted);margin-top:.3rem;"></div>
     </div>
@@ -917,7 +922,7 @@
       </div>
     </div>
 
-    <div style="margin-bottom:1.25rem;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:1rem 1.25rem;">
+    <div id="slider-section" style="margin-bottom:1.25rem;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:1rem 1.25rem;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;">
         <label style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;">Nombre de prospects souhaités</label>
         <div style="display:flex;align-items:center;gap:.5rem;">
@@ -1045,9 +1050,6 @@
             <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
           </svg>
           Télécharger Excel
-        </button>
-        <button class="btn-csv" id="btn-find-owners" onclick="findOwnerNames()" style="background:rgba(155,89,182,.15);color:#9b59b6;border-color:rgba(155,89,182,.25)">
-          👤 Trouver les gérants (3 crédits)
         </button>
       </div>
     </div>
@@ -1502,8 +1504,12 @@ function setSearchMode(mode) {
     site: 'Trouve les entreprises qui n\'ont pas de site internet.',
     social: 'Trouve les entreprises qui n\'ont pas de réseaux sociaux (Facebook, Instagram, TikTok).',
     both: 'Trouve les entreprises sans site web ET sans réseaux sociaux. Coût ×2.',
+    owners: 'Analyse les noms d\'entreprise de vos prospects existants pour extraire les noms des gérants. Coût fixe : 3 crédits.',
   };
   document.getElementById('mode-hint').textContent = hints[mode] || '';
+  // Hide/show prospect slider for owners mode (not needed)
+  const sliderSection = document.getElementById('slider-section');
+  if (sliderSection) sliderSection.style.display = mode === 'owners' ? 'none' : '';
   updateProspectsSlider();
 }
 
@@ -1598,6 +1604,9 @@ function setLoader(show, title, sub) {
 
 /* ── SEARCH (server-side) ── */
 async function runSearch() {
+  // ── Owners mode: extract names from existing prospects ──
+  if (searchMode === 'owners') { await runOwnerExtraction(); return; }
+
   const niche = document.getElementById('niche').value.trim();
   hideAlert();
   if (!niche) return showAlert("Veuillez saisir une niche ou un secteur d'activité.");
@@ -2097,20 +2106,23 @@ function esc(s) {
 }
 
 /* ── Export CSV ── */
-async function findOwnerNames() {
-  // Get visible prospects without owner names
-  const visible = getFilteredProspects();
-  const missing = visible.filter(p => !p.owner_name);
-  if (!missing.length) { alert('Tous les prospects affichés ont déjà un gérant.'); return; }
+async function runOwnerExtraction() {
+  hideAlert();
+  // Get all prospects without owner names
+  const missing = prospects.filter(p => !p.owner_name);
+  if (!missing.length) { showAlert('Tous vos prospects ont déjà un nom de gérant. ✅'); return; }
+  if (!prospects.length) { showAlert('Aucun prospect en base. Lancez d\'abord une recherche classique.'); return; }
 
-  const btn = document.getElementById('btn-find-owners');
+  if (userCredits < 3) { showAlert('Crédits insuffisants (3 requis).'); return; }
+
+  const btn = document.getElementById('btn-go');
   btn.disabled = true;
-  btn.textContent = '⏳ Analyse en cours...';
+  setLoader(true, 'Extraction des noms de gérants…', `Analyse de ${missing.length} noms d'entreprise par l'IA`);
 
   try {
     const res = await fetch('/api/pitch/extract-owners', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+      headers: AUTH_HEADERS,
       body: JSON.stringify({ prospects: missing.map(p => ({ id: p.id, name: p.name, city: p.city })) }),
     });
     const data = await res.json();
@@ -2126,13 +2138,14 @@ async function findOwnerNames() {
       });
     }
     renderTable();
-    alert(`✅ ${found} gérant(s) trouvé(s) sur ${missing.length} prospects analysés.\n💰 3 crédits utilisés.`);
+    setLoader(false);
+    showAlert(`✅ ${found} gérant(s) trouvé(s) sur ${missing.length} prospects analysés. 3 crédits utilisés.`, false);
     fetchCredits();
   } catch (err) {
-    alert('❌ ' + err.message);
+    setLoader(false);
+    showAlert('❌ ' + err.message);
   } finally {
     btn.disabled = false;
-    btn.textContent = '👤 Trouver les gérants (3 crédits)';
   }
 }
 
