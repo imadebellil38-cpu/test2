@@ -70,6 +70,7 @@ const migrations = [
   `ALTER TABLE prospects ADD COLUMN has_tiktok INTEGER DEFAULT -1`,
   `ALTER TABLE prospects ADD COLUMN search_mode TEXT DEFAULT 'site'`,
   `ALTER TABLE searches ADD COLUMN search_mode TEXT DEFAULT 'site'`,
+  `ALTER TABLE prospects ADD COLUMN owner_name TEXT DEFAULT ''`,
 ];
 
 for (const sql of migrations) {

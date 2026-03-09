@@ -867,7 +867,7 @@
     <div class="field" style="margin-bottom:1.25rem">
       <label>Type de recherche</label>
       <div class="search-modes" id="search-modes">
-        <button type="button" class="search-mode on" data-mode="site" onclick="setSearchMode('site')">
+        <button type="button" class="search-mode on" data-mode="site" id="mode-site" onclick="setSearchMode('site')">
           <span class="sm-icon">🔍</span>
           <span class="sm-label">Sans site web</span>
           <span class="sm-cost">1 crédit / prospect</span>
@@ -879,7 +879,7 @@
         </button>
         <button type="button" class="search-mode" data-mode="both" id="mode-both" onclick="setSearchMode('both')">
           <span class="sm-icon">🔥</span>
-          <span class="sm-label">Complet</span>
+          <span class="sm-label">Sans site + réseaux</span>
           <span class="sm-cost">2 crédits / prospect</span>
         </button>
       </div>
@@ -1055,6 +1055,7 @@
           <tr>
             <th class="c-n">#</th>
             <th>Entreprise</th>
+            <th>Gérant</th>
             <th>Téléphone</th>
             <th>Adresse</th>
             <th class="sortable" id="th-rating"  onclick="sortBy('rating')">Note <span class="si" id="si-rating">&#8597;</span></th>
@@ -1112,6 +1113,10 @@
     </div>
 
     <div class="tab-panel" data-tab="crm">
+      <div class="crm-field">
+        <label>Gérant / Propriétaire</label>
+        <input type="text" class="inp" id="m-owner-name" placeholder="Nom Prénom du gérant" oninput="debounceSave()" style="padding:.6rem .8rem;font-size:.85rem;">
+      </div>
       <div class="crm-field">
         <label>Notes</label>
         <textarea class="crm-ta" id="m-notes" placeholder="Informations, objections, suivi…" oninput="debounceSave()"></textarea>
@@ -1374,7 +1379,7 @@ async function loadSearchHistory() {
       const date = new Date(s.created_at);
       const ago = timeAgo(date);
       const active = filterSearchId === s.id ? 'background:var(--cyan-glow2);border-color:var(--cyan);' : '';
-      const modeLabels = { site: '🔍 Sans site', social: '📱 Sans réseaux', both: '🔥 Complet' };
+      const modeLabels = { site: '🔍 Sans site', social: '📱 Sans réseaux', both: '🔥 Sans site + réseaux' };
       const modeTag = modeLabels[s.search_mode] || '🔍 Sans site';
       return `<div onclick="filterBySearch(${s.id},'${esc(s.niche)}')" style="display:flex;justify-content:space-between;align-items:center;padding:.55rem .8rem;border-radius:8px;border:1px solid var(--border2);cursor:pointer;transition:all .15s;${active}" onmouseover="this.style.borderColor='var(--cyan)'" onmouseout="this.style.borderColor='${filterSearchId === s.id ? 'var(--cyan)' : 'var(--border2)'}'">`
         + `<div style="display:flex;align-items:center;gap:.6rem;">`
@@ -1402,6 +1407,7 @@ function timeAgo(date) {
 function filterBySearch(searchId, niche) {
   filterSearchId = searchId;
   filterNiche = niche || 'all';
+  if (niche) currentNiche = niche;
   document.getElementById('filter-niche').value = niche || 'all';
   document.getElementById('btn-clear-filter').style.display = '';
   renderTable();
@@ -1485,6 +1491,8 @@ initNicheCategories();
 
 /* ── Search Mode ── */
 function setSearchMode(mode) {
+  // Block click on disabled modes
+  if ((mode === 'social' || mode === 'both') && !socialCheckAvailable) return;
   searchMode = mode;
   document.querySelectorAll('.search-mode').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
   const hints = {
@@ -1700,12 +1708,26 @@ function renderHeat(p) {
 /* ── Table ── */
 function renderSignals(p) {
   let badges = '';
-  if (!p.website_url) badges += '<span class="badge-sig badge-nosite">🔴 Pas de site</span>';
-  if (p.has_facebook === 0 && p.has_instagram === 0 && p.has_tiktok === 0) {
-    badges += '<span class="badge-sig badge-nosocial">🟠 Pas de réseaux</span>';
-  } else if (p.has_facebook === -1 && p.has_instagram === -1 && p.has_tiktok === -1) {
-    badges += '<span class="badge-sig badge-unchecked">? Non vérifié</span>';
+  const mode = p.search_mode || 'site';
+  // Badge site — seulement en mode site ou both
+  if ((mode === 'site' || mode === 'both') && !p.website_url) {
+    badges += '<span class="badge-sig badge-nosite">🔴 Pas de site</span>';
   }
+  // Badge réseaux — seulement si le mode a vérifié les réseaux
+  if (mode === 'social' || mode === 'both') {
+    if (p.has_facebook === 0 && p.has_instagram === 0 && p.has_tiktok === 0) {
+      badges += '<span class="badge-sig badge-nosocial">🟠 Pas de réseaux</span>';
+    } else if (p.has_facebook === 1 || p.has_instagram === 1 || p.has_tiktok === 1) {
+      const found = [];
+      if (p.has_facebook === 1) found.push('FB');
+      if (p.has_instagram === 1) found.push('IG');
+      if (p.has_tiktok === 1) found.push('TK');
+      badges += '<span class="badge-sig" style="background:rgba(46,204,113,.12);color:#2ecc71;font-size:.6rem;padding:.15rem .4rem;border-radius:4px">✅ ' + found.join(', ') + '</span>';
+    } else {
+      badges += '<span class="badge-sig badge-nosocial">🟠 Sans réseaux</span>';
+    }
+  }
+  // Badge avis
   if ((p.reviews || 0) < 5) badges += '<span class="badge-sig badge-fewreviews">🟡 &lt; 5 avis</span>';
   return '<div class="badge-signals">' + (badges || '<span style="color:var(--muted);font-size:.65rem">—</span>') + '</div>';
 }
@@ -1740,6 +1762,7 @@ function renderTable() {
     tr.innerHTML = `
       <td class="c-n">${i+1}</td>
       <td class="c-name"><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.name + ' ' + p.address)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="map-link" title="Voir sur Google Maps">${esc(p.name)} <span class="map-icon">📍</span></a></td>
+      <td class="c-owner" style="font-size:.78rem;color:${p.owner_name ? 'var(--text)' : 'var(--muted)'}">${p.owner_name ? esc(p.owner_name) : '—'}</td>
       <td class="c-tel"><a href="tel:${p.phone.replace(/\s/g,'')}" onclick="event.stopPropagation()">${esc(p.phone)}</a></td>
       <td class="c-addr">${esc(p.address)}</td>
       <td>${renderStars(p.rating)}</td>
@@ -1834,6 +1857,7 @@ function openModal(id, tab) {
   const p = currentProspect;
   document.getElementById('m-name').textContent = p.name;
   document.getElementById('m-meta').textContent = `${p.phone} · ${p.city || ''}${p.rating ? ' · ' + p.rating.toFixed(1) : ''}`;
+  document.getElementById('m-owner-name').value = p.owner_name || '';
   document.getElementById('m-notes').value  = p.notes  || '';
   document.getElementById('m-rappel').value = p.rappel || '';
   document.getElementById('pitch-zone').innerHTML = '';
@@ -1901,13 +1925,15 @@ async function saveCrmNow() {
   if (!currentProspect) return;
   const notes  = document.getElementById('m-notes').value;
   const rappel = document.getElementById('m-rappel').value;
+  const owner_name = document.getElementById('m-owner-name').value;
   currentProspect.notes  = notes;
   currentProspect.rappel = rappel;
+  currentProspect.owner_name = owner_name;
   try {
     await fetch(`/api/prospects/${currentProspect.id}/notes`, {
       method: 'PUT',
       headers: AUTH_HEADERS,
-      body: JSON.stringify({ notes, rappel }),
+      body: JSON.stringify({ notes, rappel, owner_name }),
     });
     const saved = document.getElementById('crm-saved');
     saved.classList.add('show');
@@ -1930,7 +1956,7 @@ async function generatePitch() {
     const res = await fetch('/api/pitch', {
       method: 'POST',
       headers: AUTH_HEADERS,
-      body: JSON.stringify({ prospect: currentProspect, niche: currentNiche, pitchType }),
+      body: JSON.stringify({ prospect: currentProspect, niche: currentNiche || currentProspect?.niche || '', pitchType }),
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error?.message || data.error || `Erreur ${res.status}`);

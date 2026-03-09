@@ -3,6 +3,7 @@ const https = require('https');
 const validator = require('validator');
 const db = require('../db');
 const { batchCheckSocialMedia, isSocialCheckAvailable } = require('../services/socialCheck');
+const { batchFindOwners } = require('../services/pappers');
 
 const router = Router();
 
@@ -346,6 +347,21 @@ router.post('/', async (req, res) => {
 
     console.log(`[SEARCH] Final: ${prospects.length}/${maxProspects} prospects for user ${userId}`);
 
+    // ── Owner name lookup via Pappers ──
+    if (process.env.PAPPERS_API_KEY) {
+      console.log(`[SEARCH] Looking up owner names via Pappers for ${prospects.length} prospects...`);
+      try {
+        const ownerNames = await batchFindOwners(prospects);
+        for (let i = 0; i < prospects.length; i++) {
+          prospects[i].owner_name = ownerNames[i] || '';
+        }
+        const found = ownerNames.filter(n => n).length;
+        console.log(`[SEARCH] Pappers: found ${found}/${prospects.length} owner names`);
+      } catch (err) {
+        console.error('[SEARCH] Pappers error:', err.message);
+      }
+    }
+
     // ── Charge credits (×1 for site/social, ×2 for both) ──
     const creditsToCharge = prospects.length * creditMultiplier;
     if (creditsToCharge > 0) {
@@ -354,14 +370,14 @@ router.post('/', async (req, res) => {
 
     // ── Save prospects to DB (transaction) ──
     const insert = db.prepare(`
-      INSERT INTO prospects (user_id, name, phone, address, rating, reviews, city, niche, search_id, website_url, has_facebook, has_instagram, has_tiktok, search_mode)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO prospects (user_id, name, phone, address, rating, reviews, city, niche, search_id, website_url, has_facebook, has_instagram, has_tiktok, search_mode, owner_name)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     const insertMany = db.transaction((items) => {
       for (const p of items) {
         insert.run(userId, p.name, p.phone, p.address, p.rating, p.reviews, p.city, sanitizedNiche, searchId,
-          p.website_url || '', p.has_facebook, p.has_instagram, p.has_tiktok, searchMode);
+          p.website_url || '', p.has_facebook, p.has_instagram, p.has_tiktok, searchMode, p.owner_name || '');
       }
     });
     insertMany(prospects);

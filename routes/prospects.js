@@ -40,9 +40,9 @@ router.put('/:id/status', (req, res) => {
   res.json({ ok: true });
 });
 
-// PUT /api/prospects/:id/notes — update notes + rappel
+// PUT /api/prospects/:id/notes — update notes + rappel + owner_name
 router.put('/:id/notes', (req, res) => {
-  const { notes, rappel } = req.body;
+  const { notes, rappel, owner_name } = req.body;
 
   // ── Validate ──
   const id = parseInt(req.params.id, 10);
@@ -50,12 +50,13 @@ router.put('/:id/notes', (req, res) => {
 
   const cleanNotes = typeof notes === 'string' ? validator.trim(notes).substring(0, 2000) : '';
   const cleanRappel = typeof rappel === 'string' ? validator.trim(rappel).substring(0, 100) : '';
+  const cleanOwner = typeof owner_name === 'string' ? validator.trim(owner_name).substring(0, 200) : '';
 
   const prospect = db.prepare('SELECT id FROM prospects WHERE id = ? AND user_id = ?').get(id, req.user.id);
   if (!prospect) return res.status(404).json({ error: 'Prospect introuvable.' });
 
-  db.prepare('UPDATE prospects SET notes = ?, rappel = ? WHERE id = ?')
-    .run(cleanNotes, cleanRappel, id);
+  db.prepare('UPDATE prospects SET notes = ?, rappel = ?, owner_name = ? WHERE id = ?')
+    .run(cleanNotes, cleanRappel, cleanOwner, id);
   res.json({ ok: true });
 });
 

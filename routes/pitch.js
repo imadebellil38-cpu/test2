@@ -14,11 +14,11 @@ if (!ANTHROPIC_API_KEY) {
 const VALID_PITCH_TYPES = ['appel', 'email', 'sms', 'linkedin', 'fiche', 'keywords'];
 
 const PITCH_PROMPTS = {
-  appel: (name, niche, pays, rating, reviews) =>
+  appel: (name, niche, pays, rating, reviews, ownerName) =>
 `Tu es un expert commercial en création de sites web pour artisans et PME. Génère un script d'appel téléphonique en français pour démarcher ${name}, un(e) ${niche} basé(e) à ${pays}.
 
 Informations :
-- Entreprise : ${name}
+- Entreprise : ${name}${ownerName ? '\n- Gérant/Propriétaire : ' + ownerName : ''}
 - Activité : ${niche}
 - Ville : ${pays}
 - Note Google : ${rating}
@@ -34,11 +34,11 @@ Rédige le script selon ces critères :
 
 Durée de lecture à voix haute : 60 à 90 secondes. Ton : naturel, humain, chaleureux — pas agressif ni trop vendeur. Commence directement par le script sans titre ni introduction.`,
 
-  email: (name, niche, pays, rating, reviews) =>
+  email: (name, niche, pays, rating, reviews, ownerName) =>
 `Tu es un expert commercial en création de sites web pour artisans et PME. Rédige un email de prospection en français pour démarcher ${name}, un(e) ${niche} basé(e) à ${pays}.
 
 Informations :
-- Entreprise : ${name}
+- Entreprise : ${name}${ownerName ? '\n- Gérant/Propriétaire : ' + ownerName : ''}
 - Activité : ${niche}
 - Ville : ${pays}
 - Note Google : ${rating}
@@ -55,8 +55,8 @@ L'email doit :
 
 Commence directement par "Objet :" sans titre ni introduction.`,
 
-  sms: (name, niche, pays, rating, reviews) =>
-`Tu es un expert commercial en création de sites web. Rédige un SMS de prospection court en français pour ${name}, un(e) ${niche} à ${pays}.
+  sms: (name, niche, pays, rating, reviews, ownerName) =>
+`Tu es un expert commercial en création de sites web. Rédige un SMS de prospection court en français pour ${name}, un(e) ${niche} à ${pays}.${ownerName ? ' Gérant : ' + ownerName + '.' : ''}
 
 Infos : ${reviews} avis Google, note ${rating}, pas de site web.
 
@@ -69,11 +69,11 @@ Le SMS doit :
 
 Commence directement par le SMS sans titre.`,
 
-  linkedin: (name, niche, pays, rating, reviews) =>
-`Tu es un expert commercial en création de sites web. Rédige un message LinkedIn de prospection en français pour contacter le gérant de ${name}, un(e) ${niche} à ${pays}.
+  linkedin: (name, niche, pays, rating, reviews, ownerName) =>
+`Tu es un expert commercial en création de sites web. Rédige un message LinkedIn de prospection en français pour contacter ${ownerName ? ownerName + ', gérant de ' + name : 'le gérant de ' + name}, un(e) ${niche} à ${pays}.
 
 Informations :
-- Entreprise : ${name}
+- Entreprise : ${name}${ownerName ? '\n- Gérant/Propriétaire : ' + ownerName : ''}
 - Activité : ${niche}
 - Ville : ${pays}
 - Note Google : ${rating}
@@ -103,11 +103,11 @@ Règles :
 - Pas de phrase, pas d'explication, juste les mots séparés par des virgules
 - Commence directement par les mots-clés`,
 
-  fiche: (name, niche, pays, rating, reviews) =>
+  fiche: (name, niche, pays, rating, reviews, ownerName) =>
 `Tu es un assistant de prospection B2B. À partir des informations suivantes, donne-moi une FICHE RAPIDE de cette entreprise pour préparer un appel commercial.
 
 Informations :
-- Nom : ${name}
+- Nom : ${name}${ownerName ? '\n- Gérant/Propriétaire : ' + ownerName : ''}
 - Secteur recherché : ${niche}
 - Ville : ${pays}
 - Note Google : ${rating}
@@ -130,8 +130,9 @@ function callClaude(apiKey, prospect, niche, pitchType) {
     const pays = prospect.city || '';
     const rating = prospect.rating ? prospect.rating + '/5' : 'non renseignée';
     const reviews = prospect.reviews || 0;
+    const ownerName = prospect.owner_name || '';
     const promptFn = PITCH_PROMPTS[pitchType] || PITCH_PROMPTS.appel;
-    const prompt = promptFn(prospect.name, niche, pays, rating, reviews);
+    const prompt = promptFn(prospect.name, niche, pays, rating, reviews, ownerName);
 
     const body = JSON.stringify({
       model: 'claude-sonnet-4-6',
