@@ -423,6 +423,10 @@
 
     .c-n    { color: var(--muted); font-size: .75rem; width: 2.5rem; cursor: default; }
     .c-name { font-weight: 700; max-width: 175px; color: var(--text); }
+    .map-link { color: var(--text); text-decoration: none; transition: color .2s; }
+    .map-link:hover { color: var(--accent); }
+    .map-icon { font-size: .7rem; opacity: 0; transition: opacity .2s; }
+    .map-link:hover .map-icon { opacity: 1; }
     .c-addr { color: var(--dim); font-size: .8rem; max-width: 200px; }
     .c-tel a {
       color: var(--cyan); font-weight: 600; text-decoration: none; white-space: nowrap;
@@ -1732,7 +1736,7 @@ function renderTable() {
     tr.onclick = () => openModal(p.id, 'calc');
     tr.innerHTML = `
       <td class="c-n">${i+1}</td>
-      <td class="c-name">${esc(p.name)}</td>
+      <td class="c-name"><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.name + ' ' + p.address)}" target="_blank" rel="noopener" onclick="event.stopPropagation()" class="map-link" title="Voir sur Google Maps">${esc(p.name)} <span class="map-icon">📍</span></a></td>
       <td class="c-tel"><a href="tel:${p.phone.replace(/\s/g,'')}" onclick="event.stopPropagation()">${esc(p.phone)}</a></td>
       <td class="c-addr">${esc(p.address)}</td>
       <td>${renderStars(p.rating)}</td>

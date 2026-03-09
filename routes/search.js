@@ -199,9 +199,8 @@ router.post('/', async (req, res) => {
   const existingPhones = db.prepare('SELECT phone FROM prospects WHERE user_id = ?').all(userId);
   existingPhones.forEach(p => seenPhones.add(p.phone));
 
-  // For social/both modes, we collect MORE prospects (Google fetch pool)
-  // then filter after social check — need a larger pool
-  const collectMax = (searchMode === 'social' || searchMode === 'both') ? maxProspects * 3 : maxProspects;
+  // Collect target: same as maxProspects (no over-fetch needed — we sort, not filter)
+  const collectMax = maxProspects;
 
   // ── Helper: process places from a Google API response ──
   function processPlaces(places, cityName) {
@@ -315,29 +314,31 @@ router.post('/', async (req, res) => {
 
     // ── Social media check (modes: social, both) ──
     if (searchMode === 'social' || searchMode === 'both') {
-      console.log(`[SEARCH] Running social media check on ${prospects.length} prospects...`);
-      const socialResults = await batchCheckSocialMedia(prospects, GOOGLE_API_KEY);
+      // Check up to maxProspects (no need for big pool — we keep all results)
+      const toCheck = prospects.slice(0, maxProspects);
+      console.log(`[SEARCH] Running social media check on ${toCheck.length} prospects...`);
+      const socialResults = await batchCheckSocialMedia(toCheck, GOOGLE_API_KEY);
 
-      for (let i = 0; i < prospects.length; i++) {
-        prospects[i].has_facebook = socialResults[i].facebook;
-        prospects[i].has_instagram = socialResults[i].instagram;
-        prospects[i].has_tiktok = socialResults[i].tiktok;
+      for (let i = 0; i < toCheck.length; i++) {
+        toCheck[i].has_facebook = socialResults[i].facebook;
+        toCheck[i].has_instagram = socialResults[i].instagram;
+        toCheck[i].has_tiktok = socialResults[i].tiktok;
       }
 
-      // Filter: keep only prospects WITHOUT any social media
-      const beforeFilter = prospects.length;
-      const filtered = prospects.filter(p => {
-        // If check failed (-1), keep the prospect but mark as unchecked
-        if (p.has_facebook === -1) return true;
-        // Keep only those with NO social presence
-        return p.has_facebook === 0 && p.has_instagram === 0 && p.has_tiktok === 0;
+      // Sort: prospects WITHOUT social media first (best prospects on top)
+      toCheck.sort((a, b) => {
+        const scoreA = (a.has_facebook === 0 ? 0 : 1) + (a.has_instagram === 0 ? 0 : 1) + (a.has_tiktok === 0 ? 0 : 1);
+        const scoreB = (b.has_facebook === 0 ? 0 : 1) + (b.has_instagram === 0 ? 0 : 1) + (b.has_tiktok === 0 ? 0 : 1);
+        return scoreA - scoreB; // fewer social = better = first
       });
 
-      // Replace prospects array content (keep reference)
-      prospects.length = 0;
-      prospects.push(...filtered.slice(0, maxProspects));
+      const noSocial = toCheck.filter(p => p.has_facebook === 0 && p.has_instagram === 0 && p.has_tiktok === 0).length;
 
-      console.log(`[SEARCH] Social filter: ${beforeFilter} → ${prospects.length} prospects (removed ${beforeFilter - prospects.length} with social media)`);
+      // Replace prospects array
+      prospects.length = 0;
+      prospects.push(...toCheck);
+
+      console.log(`[SEARCH] Social check done: ${noSocial}/${toCheck.length} without social media (sorted best first)`);
     } else {
       // Mode 'site': trim to maxProspects
       prospects.length = Math.min(prospects.length, maxProspects);
