@@ -6,7 +6,7 @@
   <title>ProspectHunter — Pipeline CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/style.css?v=22">
+  <link rel="stylesheet" href="/style.css?v=23">
 </head>
 <body>
 
@@ -89,9 +89,12 @@
 
         <!-- Mode buttons -->
         <div class="scan-option-group">
-          <button class="mode-btn active" data-mode="site" onclick="selectMode(this)">❌ Sans site</button>
-          <button class="mode-btn" data-mode="social" onclick="selectMode(this)">📱 Sans réseaux</button>
-          <button class="mode-btn" data-mode="both" onclick="selectMode(this)">🔥 Les deux</button>
+          <button class="mode-btn active" data-mode="site"       onclick="selectMode(this)" title="Entreprises sans site web">❌ Sans site</button>
+          <button class="mode-btn"        data-mode="social"     onclick="selectMode(this)" title="Entreprises sans réseaux sociaux">📱 Sans réseaux</button>
+          <button class="mode-btn"        data-mode="both"       onclick="selectMode(this)" title="Sans site ET sans réseaux">🔥 Les deux</button>
+          <button class="mode-btn"        data-mode="fewreviews" onclick="selectMode(this)" title="Moins de 10 avis Google — besoin de visibilité">⭐ &lt;10 avis</button>
+          <button class="mode-btn"        data-mode="owners"     onclick="selectMode(this)" title="Extraction du nom du gérant par IA">🧑 Gérants IA</button>
+          <button class="mode-btn"        data-mode="new"        onclick="selectMode(this)" title="Entreprises récemment ouvertes">🆕 Récents</button>
         </div>
 
         <!-- Launch -->
@@ -375,6 +378,6 @@
 <div class="toast-container" id="toast-container"></div>
 
 <!-- ── APP JS ── -->
-<script src="/app.js?v=22"></script>
+<script src="/app.js?v=23"></script>
 </body>
 </html>
