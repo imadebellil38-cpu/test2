@@ -404,21 +404,40 @@ main {
   display: flex; gap: .35rem; flex-wrap: wrap;
 }
 
-/* Quantity selector */
-.scan-qty-group {
-  display: flex; align-items: center; gap: .35rem; flex-wrap: wrap;
-}
-.scan-qty-label {
-  font-size: .75rem; color: var(--muted); font-weight: 600; white-space: nowrap;
-}
-.qty-btn {
-  padding: .4rem .7rem; border-radius: 8px;
+/* Prospects slider */
+.slider-section {
   background: var(--card); border: 1px solid var(--border2);
-  color: var(--text2); font-size: .82rem; font-weight: 700;
-  transition: all .15s; min-height: 36px; min-width: 42px;
+  border-radius: 10px; padding: .9rem 1.1rem;
+  margin-bottom: .9rem;
 }
-.qty-btn:hover { border-color: var(--border2); color: var(--text); background: var(--card2); }
-.qty-btn.active { background: rgba(59,130,246,.15); border-color: #3b82f6; color: #60a5fa; }
+.slider-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: .65rem; gap: .5rem; flex-wrap: wrap;
+}
+.slider-label {
+  font-size: .72rem; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .06em;
+}
+.slider-count-wrap {
+  display: flex; align-items: center; gap: .35rem;
+}
+.slider-num {
+  font-size: 1.15rem; font-weight: 900; color: var(--text);
+}
+.slider-num-cost {
+  font-size: 1.15rem; font-weight: 900; color: var(--stage-cold);
+}
+.slider-unit { font-size: .72rem; color: var(--muted); }
+.slider-eq   { font-size: .72rem; color: var(--dim); }
+.slider-input {
+  width: 100%; cursor: pointer;
+  accent-color: #3b82f6;
+  height: 4px;
+}
+.slider-minmax {
+  display: flex; justify-content: space-between;
+  font-size: .7rem; color: var(--muted); margin-top: .35rem;
+}
 
 /* Flag / mode toggle buttons */
 .flag-btn, .mode-btn {

@@ -6,7 +6,7 @@
   <title>ProspectHunter — Pipeline CRM</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/style.css?v=24">
+  <link rel="stylesheet" href="/style.css?v=25">
 </head>
 <body>
 
@@ -97,17 +97,27 @@
           <button class="mode-btn"        data-mode="new"        onclick="selectMode(this)" title="Entreprises récemment ouvertes">🆕 Récents</button>
         </div>
 
-        <!-- Quantity selector -->
-        <div class="scan-qty-group">
-          <span class="scan-qty-label">Combien ?</span>
-          <button class="qty-btn active" data-qty="10"  onclick="selectQty(this)">10</button>
-          <button class="qty-btn"        data-qty="20"  onclick="selectQty(this)">20</button>
-          <button class="qty-btn"        data-qty="50"  onclick="selectQty(this)">50</button>
-          <button class="qty-btn"        data-qty="100" onclick="selectQty(this)">100</button>
-        </div>
-
         <!-- Launch -->
         <button class="btn-scan" id="btn-scan" onclick="launchScan()">⚡ Lancer</button>
+      </div>
+
+      <!-- Slider prospects -->
+      <div class="slider-section">
+        <div class="slider-header">
+          <label class="slider-label">Combien de prospects tu veux ?</label>
+          <div class="slider-count-wrap">
+            <span id="prospects-count" class="slider-num">10</span>
+            <span class="slider-unit">prospects</span>
+            <span class="slider-eq">=</span>
+            <span id="credits-cost" class="slider-num-cost">10</span>
+            <span class="slider-unit">crédits</span>
+          </div>
+        </div>
+        <input type="range" id="prospects-slider" min="1" max="100" value="10" oninput="updateProspectsSlider()" class="slider-input" />
+        <div class="slider-minmax">
+          <span>1 prospect</span>
+          <span id="prospects-max-label">100 max</span>
+        </div>
       </div>
 
       <!-- Progress / status -->
@@ -387,6 +397,6 @@
 <div class="toast-container" id="toast-container"></div>
 
 <!-- ── APP JS ── -->
-<script src="/app.js?v=24"></script>
+<script src="/app.js?v=25"></script>
 </body>
 </html>

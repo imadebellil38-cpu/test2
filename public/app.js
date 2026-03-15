@@ -25,7 +25,7 @@ let saveTimer      = null;
 /* Scan selections (driven by buttons, not dropdowns) */
 let scanCountry = 'fr';
 let scanMode    = 'site';
-let scanQty     = 10;
+let userCredits = 0;
 
 /* ─────────────────────────────────────────
    STAGE CONFIG
@@ -142,6 +142,8 @@ async function init() {
       const u = meData.user;
       const emailEl = document.getElementById('user-email-display');
       if (emailEl) emailEl.textContent = u.email;
+      userCredits = u.credits || 0;
+      updateProspectsSlider();
     }
   } catch (e) {}
 
@@ -883,9 +885,21 @@ function selectMode(btn) {
   document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b === btn));
 }
 
-function selectQty(btn) {
-  scanQty = parseInt(btn.dataset.qty, 10);
-  document.querySelectorAll('.qty-btn').forEach(b => b.classList.toggle('active', b === btn));
+function updateProspectsSlider() {
+  const slider = document.getElementById('prospects-slider');
+  if (!slider) return;
+  const multiplier = scanMode === 'both' ? 2 : 1;
+  const maxAllowed = Math.min(100, Math.max(1, Math.floor((userCredits || 100) / multiplier)));
+  slider.max = maxAllowed;
+  if (parseInt(slider.value) > maxAllowed) slider.value = maxAllowed;
+  const val = parseInt(slider.value);
+  const cost = val * multiplier;
+  const el = document.getElementById('prospects-count');
+  const costEl = document.getElementById('credits-cost');
+  const maxEl = document.getElementById('prospects-max-label');
+  if (el) el.textContent = val;
+  if (costEl) costEl.textContent = cost;
+  if (maxEl) maxEl.textContent = maxAllowed + ' max';
 }
 
 function toggleScanPanel() {
@@ -932,7 +946,7 @@ async function launchScan() {
     const res = await fetch('/api/search', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-      body: JSON.stringify({ niche, country: scanCountry, mode: scanMode, numProspects: scanQty }),
+      body: JSON.stringify({ niche, country: scanCountry, mode: scanMode, numProspects: parseInt(document.getElementById('prospects-slider')?.value || 10) }),
     });
     const data = await res.json();
 
