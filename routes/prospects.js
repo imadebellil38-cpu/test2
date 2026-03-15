@@ -5,6 +5,7 @@ const db = require('../db');
 const router = Router();
 
 const VALID_STATUSES = ['todo', 'called', 'nope', 'client'];
+const VALID_STAGES = ['cold_call', 'to_recall', 'meeting_to_set', 'meeting_confirmed', 'closed', 'refused'];
 
 // GET /api/prospects/analytics — dashboard analytics
 router.get('/analytics', (req, res) => {
@@ -124,6 +125,46 @@ router.put('/bulk/status', (req, res) => {
   const update = db.prepare(`UPDATE prospects SET status = ? WHERE id IN (${placeholders}) AND user_id = ?`);
   const result = update.run(status, ...validIds, req.user.id);
   res.json({ ok: true, updated: result.changes });
+});
+
+// PUT /api/prospects/:id/stage — move prospect to a new pipeline stage
+router.put('/:id/stage', (req, res) => {
+  const { stage } = req.body;
+
+  const id = parseInt(req.params.id, 10);
+  if (isNaN(id) || id <= 0) return res.status(400).json({ error: 'ID invalide.' });
+  if (!VALID_STAGES.includes(stage)) {
+    return res.status(400).json({ error: `Stage invalide. Choix: ${VALID_STAGES.join(', ')}` });
+  }
+
+  const prospect = db.prepare('SELECT id FROM prospects WHERE id = ? AND user_id = ?').get(id, req.user.id);
+  if (!prospect) return res.status(404).json({ error: 'Prospect introuvable.' });
+
+  db.prepare('UPDATE prospects SET pipeline_stage = ? WHERE id = ?').run(stage, id);
+  try { db.prepare('INSERT INTO activity_log (user_id, action, details) VALUES (?, ?, ?)').run(req.user.id, 'stage_change', JSON.stringify({ prospectId: id, stage })); } catch {}
+  res.json({ ok: true });
+});
+
+// POST /api/prospects/manual — manually add a prospect
+router.post('/manual', (req, res) => {
+  const { name, phone, address, notes } = req.body;
+
+  const cleanName = typeof name === 'string' ? validator.trim(name).substring(0, 200) : '';
+  const cleanPhone = typeof phone === 'string' ? validator.trim(phone).substring(0, 50) : '';
+  const cleanAddress = typeof address === 'string' ? validator.trim(address).substring(0, 300) : '';
+  const cleanNotes = typeof notes === 'string' ? validator.trim(notes).substring(0, 2000) : '';
+
+  if (!cleanName) return res.status(400).json({ error: 'Le nom est requis.' });
+
+  const result = db.prepare(
+    `INSERT INTO prospects (user_id, name, phone, address, notes, pipeline_stage, status)
+     VALUES (?, ?, ?, ?, ?, 'cold_call', 'todo')`
+  ).run(req.user.id, cleanName, cleanPhone, cleanAddress, cleanNotes);
+
+  try { db.prepare('INSERT INTO activity_log (user_id, action, details) VALUES (?, ?, ?)').run(req.user.id, 'manual_add', JSON.stringify({ prospectId: result.lastInsertRowid, name: cleanName })); } catch {}
+
+  const prospect = db.prepare('SELECT * FROM prospects WHERE id = ?').get(result.lastInsertRowid);
+  res.status(201).json(prospect);
 });
 
 // DELETE /api/prospects/bulk — bulk delete

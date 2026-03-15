@@ -81,6 +81,10 @@ const migrations = [
   `ALTER TABLE prospects ADD COLUMN search_mode TEXT DEFAULT 'site'`,
   `ALTER TABLE searches ADD COLUMN search_mode TEXT DEFAULT 'site'`,
   `ALTER TABLE prospects ADD COLUMN owner_name TEXT DEFAULT ''`,
+  // ── Pipeline CRM ──
+  `ALTER TABLE prospects ADD COLUMN pipeline_stage TEXT DEFAULT 'cold_call'`,
+  `ALTER TABLE prospects ADD COLUMN objection TEXT DEFAULT ''`,
+  `ALTER TABLE prospects ADD COLUMN meeting_date TEXT DEFAULT ''`,
 ];
 
 for (const sql of migrations) {

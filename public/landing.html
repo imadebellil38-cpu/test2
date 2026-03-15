@@ -4,176 +4,264 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ProspectHunter — Trouve tes prochains clients</title>
-  <meta name="description" content="ProspectHunter identifie les entreprises sans site web ni réseaux sociaux. Pitch IA, CRM intégré, prospection automatisée.">
+  <meta name="description" content="ProspectHunter identifie les entreprises sans site web ni réseaux sociaux. Pipeline CRM, Pitch IA, prospection automatisée.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      --bg: #0a0a0a;
-      --surface: #111;
-      --surface2: #0f0f0f;
-      --border: #1a1a1a;
-      --border2: #222;
-      --text: #ededed;
-      --text2: #a1a1a1;
-      --muted: #666;
-      --dim: #444;
-      --cyan: #00c8f8;
-      --cyan-glow: rgba(0,200,248,.08);
+      --bg: #03050f;
+      --surface: #060c1e;
+      --card: #0b1128;
+      --border: #1a2040;
+      --border2: #232b4a;
+      --text: #e8eaf6;
+      --text2: #8892b0;
+      --muted: #4a5268;
+      --dim: #6b7394;
+      --blue: #ef4444;
+      --purple: #e11d48;
+      --teal: #f97316;
+      --grad: linear-gradient(135deg, #ef4444 0%, #e11d48 60%, #f97316 100%);
     }
     body {
       background: var(--bg); color: var(--text);
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Inter', -apple-system, sans-serif;
       min-height: 100vh; line-height: 1.6;
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
     }
     a { text-decoration: none; color: inherit; }
+
+    /* ── CANVAS BG ── */
+    #particles-canvas {
+      position: fixed; top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none; z-index: 0;
+      opacity: .4;
+    }
 
     /* ── NAV ── */
     nav {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      height: 60px; padding: 0 clamp(1rem, 4vw, 3rem);
+      height: 64px; padding: 0 clamp(1rem, 4vw, 3rem);
       display: flex; align-items: center;
-      background: rgba(10,10,10,.8);
-      backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+      background: rgba(3,5,15,.85);
+      backdrop-filter: blur(20px);
       border-bottom: 1px solid var(--border);
     }
     .nav-logo { display: flex; align-items: center; gap: .6rem; }
     .nav-logo-icon {
-      width: 28px; height: 28px;
-      background: var(--text); border-radius: 7px;
+      width: 30px; height: 30px;
+      background: var(--grad); border-radius: 8px;
       display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
     }
-    .nav-logo-text { font-size: 1rem; font-weight: 700; letter-spacing: -.3px; }
-    .nav-logo-text span { color: var(--text2); }
-    .nav-links { margin-left: auto; display: flex; align-items: center; gap: 1.75rem; }
-    .nav-link {
-      font-size: .82rem; font-weight: 500; color: var(--muted);
-      transition: color .15s;
+    .nav-logo-text {
+      font-size: 1rem; font-weight: 800; letter-spacing: -.3px;
+      background: var(--grad);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
+    .nav-links { margin-left: auto; display: flex; align-items: center; gap: 1.5rem; }
+    .nav-link { font-size: .82rem; font-weight: 500; color: var(--muted); transition: color .15s; }
     .nav-link:hover { color: var(--text); }
     .nav-login {
-      padding: .45rem 1.1rem; border-radius: 6px;
+      padding: .45rem 1rem; border-radius: 7px;
       border: 1px solid var(--border2); background: transparent;
       color: var(--text2); font-size: .82rem; font-weight: 500;
       cursor: pointer; font-family: inherit; transition: all .15s;
     }
-    .nav-login:hover { border-color: #444; color: var(--text); }
+    .nav-login:hover { border-color: #3a4266; color: var(--text); }
     .nav-cta {
-      padding: .45rem 1.1rem; border-radius: 6px;
-      background: var(--text); color: var(--bg);
-      font-size: .82rem; font-weight: 600; border: none;
+      padding: .45rem 1.1rem; border-radius: 7px;
+      background: var(--grad); color: #fff;
+      font-size: .82rem; font-weight: 700; border: none;
       cursor: pointer; font-family: inherit; transition: opacity .15s;
+      box-shadow: 0 0 20px rgba(239,68,68,.3);
     }
-    .nav-cta:hover { opacity: .85; }
+    .nav-cta:hover { opacity: .9; }
 
     /* ── HERO ── */
     .hero {
+      position: relative; z-index: 1;
       padding: 11rem 2rem 7rem; text-align: center;
-      position: relative; overflow: hidden;
+      overflow: hidden;
     }
-    .hero::before {
-      content: ''; position: absolute;
-      top: -20%; left: 50%; transform: translateX(-50%);
-      width: 600px; height: 400px;
-      background: radial-gradient(ellipse, rgba(0,200,248,.06) 0%, transparent 70%);
+    .hero-glow {
+      position: absolute;
+      top: 15%; left: 50%; transform: translateX(-50%);
+      width: 700px; height: 400px;
+      background: radial-gradient(ellipse, rgba(239,68,68,.12) 0%, rgba(225,29,72,.06) 50%, transparent 70%);
       pointer-events: none;
     }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .3rem .9rem; border-radius: 999px;
+      border: 1px solid rgba(239,68,68,.3);
+      background: rgba(239,68,68,.08);
+      font-size: .75rem; font-weight: 700; color: var(--blue);
+      text-transform: uppercase; letter-spacing: .06em;
+      margin-bottom: 1.5rem;
+    }
     .hero h1 {
-      font-size: clamp(2.8rem, 6vw, 4.5rem);
-      font-weight: 700; line-height: 1.08;
-      letter-spacing: -.04em;
-      text-wrap: balance;
-      max-width: 720px; margin: 0 auto 1.25rem;
-      background: linear-gradient(180deg, #fff 30%, #999 100%);
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      font-weight: 900; line-height: 1.06;
+      letter-spacing: -.05em;
+      max-width: 800px; margin: 0 auto 1.5rem;
+    }
+    .hero h1 .gradient-title {
+      background: var(--grad);
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
       background-clip: text;
     }
     .hero p {
-      font-size: 1.1rem; color: var(--text2); max-width: 480px;
-      margin: 0 auto 2.5rem; line-height: 1.6;
-      text-wrap: balance;
+      font-size: 1.1rem; color: var(--text2); max-width: 500px;
+      margin: 0 auto 2rem; line-height: 1.65;
     }
-    .hero-actions { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; }
+    .hero-actions { display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem; }
     .btn-primary {
-      padding: .7rem 1.75rem; border-radius: 8px;
-      background: var(--text); color: var(--bg);
-      font-size: .9rem; font-weight: 600; border: none;
-      cursor: pointer; font-family: inherit;
-      transition: opacity .15s;
+      padding: .8rem 2rem; border-radius: 9px;
+      background: var(--grad); color: #fff;
+      font-size: .95rem; font-weight: 700; border: none;
+      cursor: pointer; font-family: inherit; transition: opacity .15s;
+      box-shadow: 0 4px 24px rgba(239,68,68,.35);
     }
-    .btn-primary:hover { opacity: .85; }
+    .btn-primary:hover { opacity: .9; }
     .btn-secondary {
-      padding: .7rem 1.75rem; border-radius: 8px;
+      padding: .8rem 2rem; border-radius: 9px;
       background: transparent; border: 1px solid var(--border2);
-      color: var(--text2); font-size: .9rem; font-weight: 500;
+      color: var(--text2); font-size: .95rem; font-weight: 500;
       cursor: pointer; font-family: inherit; transition: all .15s;
     }
-    .btn-secondary:hover { border-color: #444; color: var(--text); }
+    .btn-secondary:hover { border-color: var(--blue); color: var(--text); }
 
-    .hero-sep {
-      width: 100%; height: 1px; margin-top: 7rem;
-      background: linear-gradient(90deg, transparent, var(--border2), transparent);
+    /* ── SIGNAL DEMO CARDS ── */
+    .signal-demo {
+      display: flex; gap: .75rem; justify-content: center; flex-wrap: wrap;
+      margin-top: 1rem;
+    }
+    .signal-card {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .55rem 1rem; border-radius: 10px;
+      background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.22);
+      font-size: .8rem; font-weight: 600; color: #f87171;
+    }
+    .signal-card.social {
+      background: rgba(225,29,72,.08); border-color: rgba(225,29,72,.22);
+      color: #c084fc;
+    }
+    .signal-card.tiktok {
+      background: rgba(249,115,22,.08); border-color: rgba(249,115,22,.22);
+      color: #2dd4bf;
+    }
+
+    /* ── RADAR ANIMATION ── */
+    .radar-wrap {
+      position: relative; width: 220px; height: 220px;
+      margin: 3rem auto 0;
+    }
+    .radar-circle {
+      position: absolute; border-radius: 50%;
+      border: 1px solid rgba(239,68,68,.2);
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+    }
+    .radar-c1 { width: 220px; height: 220px; }
+    .radar-c2 { width: 160px; height: 160px; border-color: rgba(239,68,68,.3); }
+    .radar-c3 { width: 100px; height: 100px; border-color: rgba(239,68,68,.4); }
+    .radar-dot {
+      position: absolute; width: 8px; height: 8px;
+      border-radius: 50%; transform: translate(-50%, -50%);
+    }
+    .radar-dot.d1 { background: var(--blue);   top: 28%; left: 65%; animation: radarpulse 2s ease-in-out infinite; }
+    .radar-dot.d2 { background: var(--purple);  top: 62%; left: 38%; animation: radarpulse 2.4s ease-in-out .4s infinite; }
+    .radar-dot.d3 { background: var(--teal);    top: 40%; left: 25%; animation: radarpulse 1.8s ease-in-out .8s infinite; }
+    .radar-dot.d4 { background: #f97316;         top: 72%; left: 70%; animation: radarpulse 2.2s ease-in-out .2s infinite; }
+    @keyframes radarpulse {
+      0%, 100% { box-shadow: 0 0 0 0 currentColor; opacity: 1; }
+      50% { box-shadow: 0 0 0 8px transparent; opacity: .7; }
+    }
+    .radar-sweep {
+      position: absolute; top: 50%; left: 50%;
+      width: 110px; height: 2px;
+      transform-origin: 0% 50%;
+      background: linear-gradient(90deg, rgba(239,68,68,.8) 0%, transparent 100%);
+      animation: radarsweep 2.5s linear infinite;
+    }
+    @keyframes radarsweep {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    .radar-label {
+      text-align: center; font-size: .72rem; font-weight: 600; color: var(--muted);
+      margin-top: .75rem; text-transform: uppercase; letter-spacing: .06em;
     }
 
     /* ── SECTIONS ── */
-    section { padding: 7rem 2rem; position: relative; }
+    section { padding: 6rem 2rem; position: relative; z-index: 1; }
     .section-inner { max-width: 1060px; margin: 0 auto; }
     .section-label {
-      font-size: .75rem; font-weight: 600; text-transform: uppercase;
-      letter-spacing: .08em; color: var(--cyan); margin-bottom: .75rem;
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .25rem .8rem; border-radius: 999px;
+      background: var(--blue-bg, rgba(239,68,68,.08)); border: 1px solid rgba(239,68,68,.2);
+      font-size: .72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--blue); margin-bottom: 1rem;
     }
     .section-title {
-      font-size: clamp(1.75rem, 3.5vw, 2.4rem);
-      font-weight: 700; line-height: 1.15;
-      letter-spacing: -.03em; margin-bottom: .75rem;
-      text-wrap: balance;
+      font-size: clamp(1.75rem, 3.5vw, 2.6rem);
+      font-weight: 800; line-height: 1.12;
+      letter-spacing: -.04em; margin-bottom: .75rem;
     }
     .section-sub {
-      font-size: 1rem; color: var(--text2); max-width: 480px;
-      margin-bottom: 3.5rem; line-height: 1.6;
+      font-size: 1rem; color: var(--text2); max-width: 500px;
+      margin-bottom: 3.5rem; line-height: 1.65;
     }
 
     /* ── FEATURES ── */
     .features-grid {
       display: grid; grid-template-columns: repeat(3, 1fr);
       gap: 1px; background: var(--border);
-      border: 1px solid var(--border); border-radius: 8px;
+      border: 1px solid var(--border); border-radius: 12px;
       overflow: hidden;
     }
     .feature-card {
       background: var(--surface); padding: 2rem 1.5rem;
       transition: background .2s;
     }
-    .feature-card:hover { background: #161616; }
+    .feature-card:hover { background: var(--card); }
     .feature-icon {
-      font-size: 1.25rem; margin-bottom: 1rem;
-      width: 36px; height: 36px; border-radius: 8px;
-      background: var(--bg); border: 1px solid var(--border);
+      font-size: 1.3rem; margin-bottom: 1rem;
+      width: 40px; height: 40px; border-radius: 10px;
+      background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.2);
       display: flex; align-items: center; justify-content: center;
     }
-    .feature-card h3 {
-      font-size: .95rem; font-weight: 600; margin-bottom: .4rem;
-    }
-    .feature-card p {
-      font-size: .85rem; color: var(--text2); line-height: 1.55;
-    }
+    .feature-card h3 { font-size: .95rem; font-weight: 700; margin-bottom: .4rem; }
+    .feature-card p { font-size: .84rem; color: var(--text2); line-height: 1.6; }
 
-    /* ── STEPS ── */
-    .alt-bg { background: var(--surface2); }
+    /* ── ALT BG ── */
+    .alt-bg { background: var(--surface); }
+
+    /* ── STEPS (3-step flow) ── */
     .steps {
       display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 2rem;
+      gap: 2rem; position: relative;
     }
-    .step { position: relative; }
-    .step-num {
-      font-size: .75rem; font-weight: 700; color: var(--cyan);
-      margin-bottom: .75rem; font-variant-numeric: tabular-nums;
+    .steps::before {
+      content: '';
+      position: absolute; top: 1.5rem; left: calc(16.67% + 1rem); right: calc(16.67% + 1rem);
+      height: 1px; background: linear-gradient(90deg, var(--blue), var(--purple), var(--teal));
+      opacity: .3;
     }
-    .step h3 { font-size: 1rem; font-weight: 600; margin-bottom: .4rem; }
-    .step p { font-size: .85rem; color: var(--text2); line-height: 1.6; }
+    .step { text-align: center; position: relative; }
+    .step-num-wrap {
+      width: 3rem; height: 3rem; border-radius: 50%;
+      background: var(--grad); margin: 0 auto 1rem;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .9rem; font-weight: 900; color: #fff;
+      box-shadow: 0 0 20px rgba(239,68,68,.3);
+    }
+    .step h3 { font-size: 1rem; font-weight: 700; margin-bottom: .4rem; }
+    .step p { font-size: .85rem; color: var(--text2); line-height: 1.65; }
 
     /* ── PRICING ── */
     .pricing-grid {
@@ -181,36 +269,37 @@
       gap: 1.25rem;
     }
     .price-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 8px; padding: 2.25rem 1.75rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 12px; padding: 2rem 1.75rem;
       display: flex; flex-direction: column;
       transition: border-color .2s;
     }
     .price-card:hover { border-color: var(--border2); }
     .price-card.featured {
-      border-color: rgba(0,200,248,.25);
+      border-color: rgba(239,68,68,.4);
+      background: rgba(239,68,68,.05);
       position: relative;
     }
     .price-tag {
-      position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
-      background: var(--cyan); color: #000;
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: var(--grad); color: #fff;
       font-size: .68rem; font-weight: 700;
       padding: .25rem 1rem; border-radius: 999px;
-      text-transform: uppercase; letter-spacing: .03em;
+      text-transform: uppercase; letter-spacing: .04em;
+      white-space: nowrap;
     }
     .price-plan {
-      font-size: .78rem; font-weight: 600; text-transform: uppercase;
-      letter-spacing: .06em; color: var(--muted); margin-bottom: .5rem;
+      font-size: .78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .07em; color: var(--muted); margin-bottom: .5rem;
     }
-    .price-plan.accent { color: var(--cyan); }
-    .price-amount {
-      font-size: 2.75rem; font-weight: 700; letter-spacing: -.04em;
-      margin-bottom: .15rem;
+    .price-plan.accent {
+      background: var(--grad);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
+    .price-amount { font-size: 2.75rem; font-weight: 800; letter-spacing: -.04em; margin-bottom: .15rem; }
     .price-amount small { font-size: .85rem; font-weight: 400; color: var(--muted); }
-    .price-desc {
-      font-size: .82rem; color: var(--text2); margin-bottom: 1.5rem;
-    }
+    .price-desc { font-size: .82rem; color: var(--text2); margin-bottom: 1.5rem; }
     .price-features { list-style: none; flex: 1; margin-bottom: 1.75rem; }
     .price-features li {
       padding: .4rem 0; font-size: .84rem; color: var(--text2);
@@ -218,89 +307,88 @@
     }
     .price-features li::before {
       content: ''; width: 16px; height: 16px; flex-shrink: 0;
-      border-radius: 50%; background: rgba(0,200,248,.1);
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='%2300c8f8' stroke-width='3' stroke-linecap='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
+      border-radius: 50%;
+      background: rgba(239,68,68,.12);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='9' height='9' viewBox='0 0 24 24' fill='none' stroke='%235b7fff' stroke-width='3' stroke-linecap='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E");
       background-repeat: no-repeat; background-position: center;
     }
     .price-btn {
-      width: 100%; padding: .7rem; border-radius: 8px;
-      font-size: .85rem; font-weight: 600; cursor: pointer;
+      width: 100%; padding: .75rem; border-radius: 9px;
+      font-size: .85rem; font-weight: 700; cursor: pointer;
       border: none; font-family: inherit; transition: all .15s;
     }
     .price-btn-outline {
       background: transparent; border: 1px solid var(--border2);
       color: var(--text2);
     }
-    .price-btn-outline:hover { border-color: #444; color: var(--text); }
+    .price-btn-outline:hover { border-color: var(--blue); color: var(--text); }
     .price-btn-filled {
-      background: var(--text); color: var(--bg);
+      background: var(--grad); color: #fff;
+      box-shadow: 0 4px 20px rgba(239,68,68,.3);
     }
-    .price-btn-filled:hover { opacity: .85; }
+    .price-btn-filled:hover { opacity: .9; }
 
-    /* ── CTA FINAL ── */
-    .cta-section {
-      text-align: center; position: relative; overflow: hidden;
-    }
+    /* ── CTA ── */
+    .cta-section { text-align: center; position: relative; overflow: hidden; }
     .cta-section::before {
       content: ''; position: absolute;
       bottom: -10%; left: 50%; transform: translateX(-50%);
-      width: 500px; height: 300px;
-      background: radial-gradient(ellipse, rgba(0,200,248,.04) 0%, transparent 70%);
+      width: 600px; height: 300px;
+      background: radial-gradient(ellipse, rgba(239,68,68,.07) 0%, transparent 70%);
       pointer-events: none;
     }
     .cta-section h2 {
-      font-size: clamp(1.75rem, 3.5vw, 2.4rem);
-      font-weight: 700; letter-spacing: -.03em;
-      margin-bottom: .75rem; text-wrap: balance;
+      font-size: clamp(1.75rem, 3.5vw, 2.6rem);
+      font-weight: 800; letter-spacing: -.04em;
+      margin-bottom: .75rem;
     }
-    .cta-section p {
-      font-size: 1rem; color: var(--text2);
-      margin-bottom: 2rem; max-width: 420px;
-      margin-left: auto; margin-right: auto;
-    }
+    .cta-section p { font-size: 1rem; color: var(--text2); margin-bottom: 2rem; max-width: 420px; margin-left: auto; margin-right: auto; }
 
     /* ── FOOTER ── */
     footer {
       padding: 2rem; text-align: center;
-      border-top: 1px solid var(--border);
+      border-top: 1px solid var(--border); position: relative; z-index: 1;
     }
     footer p { font-size: .78rem; color: var(--dim); }
 
     /* ── DIVIDER ── */
     .divider {
-      height: 1px;
+      height: 1px; position: relative; z-index: 1;
       background: linear-gradient(90deg, transparent, var(--border2), transparent);
     }
 
-    /* ── ANIMATIONS ── */
+    /* ── FADE UP ── */
     .fade-up {
-      opacity: 0; transform: translateY(16px);
-      transition: opacity .5s cubic-bezier(.16,1,.3,1), transform .5s cubic-bezier(.16,1,.3,1);
+      opacity: 0; transform: translateY(18px);
+      transition: opacity .55s cubic-bezier(.16,1,.3,1), transform .55s cubic-bezier(.16,1,.3,1);
     }
     .fade-up.visible { opacity: 1; transform: translateY(0); }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
       .features-grid { grid-template-columns: 1fr; }
-      .steps { grid-template-columns: 1fr; gap: 1.5rem; }
+      .steps { grid-template-columns: 1fr; gap: 2rem; }
+      .steps::before { display: none; }
       .pricing-grid { grid-template-columns: 1fr; max-width: 380px; margin: 0 auto; }
-      .hero { padding: 9rem 1.25rem 5rem; }
-      section { padding: 5rem 1.25rem; }
+      .hero { padding: 9rem 1.25rem 4rem; }
+      section { padding: 4.5rem 1.25rem; }
       .nav-link { display: none; }
-      .nav-links { gap: .75rem; }
+      .nav-links { gap: .6rem; }
       .hero-actions { flex-direction: column; align-items: center; }
+      .signal-demo { flex-direction: column; align-items: center; }
     }
   </style>
 </head>
 <body>
 
+<!-- ── PARTICLES CANVAS ── -->
+<canvas id="particles-canvas"></canvas>
+
 <!-- ── NAV ── -->
 <nav>
   <a class="nav-logo" href="/">
-    <div class="nav-logo-icon">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-    </div>
-    <span class="nav-logo-text">Prospect<span>Hunter</span></span>
+    <div class="nav-logo-icon">🎯</div>
+    <span class="nav-logo-text">ProspectHunter</span>
   </a>
   <div class="nav-links">
     <a class="nav-link" href="#features">Fonctionnalités</a>
@@ -313,13 +401,38 @@
 
 <!-- ── HERO ── -->
 <section class="hero">
-  <h1 class="fade-up">Trouve tes prochains clients avant tout le monde</h1>
-  <p class="fade-up">Identifie les entreprises sans présence digitale. Contacte-les avec un pitch IA personnalisé. Signe-les.</p>
+  <div class="hero-glow"></div>
+  <div class="hero-eyebrow fade-up">🎯 Pipeline CRM pour closeurs</div>
+  <h1 class="fade-up">
+    Trouve les business<br>
+    <span class="gradient-title">qui vivent encore en 2005</span>
+  </h1>
+  <p class="fade-up">Pas de site web · 0 réseaux sociaux · Pipeline CRM intégré · Pitch IA personnalisé</p>
   <div class="hero-actions fade-up">
-    <a class="btn-primary" href="/login?tab=register">Commencer gratuitement</a>
+    <a class="btn-primary" href="/login?tab=register">Commencer gratuitement 🚀</a>
     <a class="btn-secondary" href="#how">Comment ça marche</a>
   </div>
-  <div class="hero-sep"></div>
+
+  <!-- Signal badges demo -->
+  <div class="signal-demo fade-up">
+    <div class="signal-card">❌ Sans site web</div>
+    <div class="signal-card social">❌ Sans Instagram</div>
+    <div class="signal-card social">❌ Sans Facebook</div>
+    <div class="signal-card tiktok">❌ Sans TikTok</div>
+  </div>
+
+  <!-- Radar animation -->
+  <div class="radar-wrap fade-up">
+    <div class="radar-circle radar-c1"></div>
+    <div class="radar-circle radar-c2"></div>
+    <div class="radar-circle radar-c3"></div>
+    <div class="radar-dot d1"></div>
+    <div class="radar-dot d2"></div>
+    <div class="radar-dot d3"></div>
+    <div class="radar-dot d4"></div>
+    <div class="radar-sweep"></div>
+  </div>
+  <div class="radar-label">Scan en cours...</div>
 </section>
 
 <!-- ── FEATURES ── -->
@@ -333,27 +446,27 @@
       <div class="feature-card">
         <div class="feature-icon">🔍</div>
         <h3>Recherche intelligente</h3>
-        <p>Trouve les entreprises sans site web, sans réseaux sociaux, ou les deux. Par niche et par ville.</p>
+        <p>Trouve les entreprises sans site web, sans réseaux sociaux. Par niche et par ville.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📞</div>
+        <h3>Pipeline Cold Call</h3>
+        <p>4 étapes : Cold Call → À Rappeler → Rendez-vous → Closé. Chaque prospect avance dans le pipe.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">✍️</div>
-        <h3>Pitch IA</h3>
-        <p>Un pitch personnalisé généré pour chaque prospect. Basé sur son activité et ses manques.</p>
+        <h3>Pitch IA contextuel</h3>
+        <p>Le pitch s'adapte à l'étape du prospect. Appel froid, rappel, closing — le bon script au bon moment.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <h3>Détection réseaux sociaux</h3>
+        <p>Vérifie la présence sur Facebook, Instagram, TikTok instantanément.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">📊</div>
         <h3>CRM intégré</h3>
-        <p>Statuts, notes, rappels, historique. Gère tes prospects sans quitter l'app.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">📞</div>
-        <h3>Call tracker</h3>
-        <p>Suis chaque appel, note les objections, programme les relances automatiquement.</p>
-      </div>
-      <div class="feature-card">
-        <div class="feature-icon">📱</div>
-        <h3>Détection réseaux</h3>
-        <p>Vérifie la présence sur Facebook, Instagram, LinkedIn. Instantanément.</p>
+        <p>Notes, rappels, historique. Gère tes prospects sans jamais quitter l'app.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon">📁</div>
@@ -375,19 +488,19 @@
 
     <div class="steps">
       <div class="step fade-up">
-        <div class="step-num">01</div>
+        <div class="step-num-wrap">01</div>
         <h3>Configure ta recherche</h3>
-        <p>Choisis une niche, une ville et un mode de recherche. L'outil analyse Google Places en temps réel.</p>
+        <p>Choisis une niche, une ville et un mode : sans site, sans réseaux, ou les deux. L'outil scanne Google Places en temps réel.</p>
       </div>
       <div class="step fade-up">
-        <div class="step-num">02</div>
-        <h3>Analyse les résultats</h3>
-        <p>Chaque prospect affiche un score, ses signaux faibles et un pitch IA prêt à l'emploi.</p>
+        <div class="step-num-wrap">02</div>
+        <h3>Analyse les signaux</h3>
+        <p>Chaque prospect affiche ses signaux faibles : pas de site, pas d'Instagram, pas de Facebook. Tu sais qui appeler en premier.</p>
       </div>
       <div class="step fade-up">
-        <div class="step-num">03</div>
-        <h3>Contacte et signe</h3>
-        <p>Appelle avec le script IA, suis tes appels dans le CRM, programme tes relances.</p>
+        <div class="step-num-wrap">03</div>
+        <h3>Fais avancer le pipe</h3>
+        <p>Cold Call → Rappel → RDV → Closé. Le pitch IA s'adapte à chaque étape. Tu closes plus vite.</p>
       </div>
     </div>
   </div>
@@ -409,20 +522,20 @@
         <div class="price-desc">5 crédits pour tester</div>
         <ul class="price-features">
           <li>Recherche Google Places</li>
-          <li>CRM intégré</li>
+          <li>Pipeline CRM complet</li>
           <li>Export CSV</li>
           <li>5 crédits à l'inscription</li>
         </ul>
         <a class="price-btn price-btn-outline" href="/login?tab=register">Commencer</a>
       </div>
       <div class="price-card featured fade-up">
-        <div class="price-tag">Populaire</div>
+        <div class="price-tag">Populaire 🏆</div>
         <div class="price-plan accent">Pro</div>
         <div class="price-amount">29<small> EUR/mois</small></div>
         <div class="price-desc">100 crédits par mois</div>
         <ul class="price-features">
           <li>Tout du plan Gratuit</li>
-          <li>Pitch IA personnalisé</li>
+          <li>Pitch IA contextuel</li>
           <li>Génération de mots-clés</li>
           <li>Filtre IA intelligent</li>
           <li>100 crédits / mois</li>
@@ -451,22 +564,22 @@
 <!-- ── CTA ── -->
 <section class="cta-section">
   <div class="section-inner">
-    <h2 class="fade-up">Prêt à trouver tes prochains clients ?</h2>
+    <h2 class="fade-up">Prêt à remplir ton pipeline ?</h2>
     <p class="fade-up">5 crédits offerts. Aucune carte bancaire requise.</p>
-    <a class="btn-primary fade-up" href="/login?tab=register">Créer mon compte</a>
+    <a class="btn-primary fade-up" href="/login?tab=register">Créer mon compte 🚀</a>
   </div>
 </section>
 
 <!-- ── FOOTER ── -->
 <footer>
-  <p>&copy; 2025 ProspectHunter</p>
+  <p>&copy; 2025 ProspectHunter &mdash; Trouve. Contacte. Close.</p>
 </footer>
 
 <script>
-// If logged in, adapt nav
+// Adapt nav if logged in
 if (localStorage.getItem('ph_token')) {
   const cta = document.querySelector('.nav-cta');
-  if (cta) { cta.href = '/app'; cta.textContent = 'Ouvrir l\'app'; }
+  if (cta) { cta.href = '/app'; cta.textContent = 'Ouvrir l\'app 🎯'; }
   const login = document.querySelector('.nav-login');
   if (login) login.style.display = 'none';
 }
@@ -474,7 +587,7 @@ if (localStorage.getItem('ph_token')) {
 // Scroll fade-up
 const obs = new IntersectionObserver((entries) => {
   entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }});
-}, { threshold: 0.15 });
+}, { threshold: 0.12 });
 document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
 
 // Smooth scroll
@@ -485,6 +598,71 @@ document.querySelectorAll('a[href^="#"]').forEach(a => {
     if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 });
+
+// ── Particle canvas ──
+(function() {
+  const canvas = document.getElementById('particles-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const COLORS = ['rgba(239,68,68,', 'rgba(225,29,72,', 'rgba(249,115,22,'];
+
+  function createParticle() {
+    return {
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: .5 + Math.random() * 1.5,
+      vx: (Math.random() - .5) * .3,
+      vy: (Math.random() - .5) * .3,
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      alpha: .2 + Math.random() * .5,
+    };
+  }
+
+  for (let i = 0; i < 80; i++) particles.push(createParticle());
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    particles.forEach(p => {
+      p.x += p.vx; p.y += p.vy;
+      if (p.x < 0) p.x = W; if (p.x > W) p.x = 0;
+      if (p.y < 0) p.y = H; if (p.y > H) p.y = 0;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = p.color + p.alpha + ')';
+      ctx.fill();
+    });
+
+    // Draw connecting lines for nearby particles
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 100) {
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = 'rgba(239,68,68,' + (.08 * (1 - dist/100)) + ')';
+          ctx.lineWidth = .5;
+          ctx.stroke();
+        }
+      }
+    }
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
 </script>
 </body>
 </html>

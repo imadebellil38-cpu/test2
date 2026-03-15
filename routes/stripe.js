@@ -6,7 +6,6 @@ const router = Router();
 const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET;
 
-// Only init Stripe if key exists
 let stripe = null;
 if (STRIPE_SECRET) {
   stripe = require('stripe')(STRIPE_SECRET);
@@ -14,30 +13,26 @@ if (STRIPE_SECRET) {
   console.warn('\x1b[33m[WARN] STRIPE_SECRET_KEY not set — payments disabled\x1b[0m');
 }
 
-const PLAN_PRICES = {
-  pro: process.env.STRIPE_PRICE_PRO || '',
-  enterprise: process.env.STRIPE_PRICE_ENTERPRISE || '',
+// Packs leads (one-time payments)
+const PACKS = {
+  starter:    { credits: 500,  price: process.env.STRIPE_PRICE_STARTER    || '', label: 'Starter 500 leads',    eur: 100 },
+  prospecteur:{ credits: 1000, price: process.env.STRIPE_PRICE_PROSPECTEUR|| '', label: 'Prospecteur 1000 leads',eur: 190 },
+  chasseur:   { credits: 2000, price: process.env.STRIPE_PRICE_CHASSEUR   || '', label: 'Chasseur 2000 leads',   eur: 360 },
+  legende:    { credits: 3000, price: process.env.STRIPE_PRICE_LEGENDE    || '', label: 'Légende 3000 leads',    eur: 550 },
 };
-
-const PLAN_CREDITS = { free: 5, pro: 100, enterprise: 500 };
 
 // POST /api/stripe/checkout — create Stripe Checkout session
 router.post('/checkout', async (req, res) => {
-  if (!stripe) return res.status(503).json({ error: 'Paiement non configuré.' });
+  if (!stripe) return res.status(503).json({ error: 'Paiement non configuré. Ajoutez STRIPE_SECRET_KEY dans .env' });
 
-  const { plan } = req.body;
-  if (!plan || !PLAN_PRICES[plan]) {
-    return res.status(400).json({ error: 'Plan invalide.' });
-  }
-  if (!PLAN_PRICES[plan]) {
-    return res.status(400).json({ error: 'Prix Stripe non configuré pour ce plan.' });
-  }
+  const { pack } = req.body;
+  if (!pack || !PACKS[pack]) return res.status(400).json({ error: 'Pack invalide.' });
+  if (!PACKS[pack].price) return res.status(400).json({ error: `STRIPE_PRICE_${pack.toUpperCase()} non configuré dans .env` });
 
   const user = db.prepare('SELECT id, email, stripe_customer_id FROM users WHERE id = ?').get(req.user.id);
   if (!user) return res.status(404).json({ error: 'Utilisateur introuvable.' });
 
   try {
-    // Create or reuse Stripe customer
     let customerId = user.stripe_customer_id;
     if (!customerId) {
       const customer = await stripe.customers.create({ email: user.email, metadata: { user_id: String(user.id) } });
@@ -47,50 +42,26 @@ router.post('/checkout', async (req, res) => {
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
-      mode: 'subscription',
-      line_items: [{ price: PLAN_PRICES[plan], quantity: 1 }],
-      success_url: `${process.env.APP_URL || 'http://localhost:3000'}/pricing?success=1`,
-      cancel_url: `${process.env.APP_URL || 'http://localhost:3000'}/pricing?cancelled=1`,
-      metadata: { user_id: String(user.id), plan },
+      mode: 'payment', // one-time
+      line_items: [{ price: PACKS[pack].price, quantity: 1 }],
+      success_url: `${process.env.APP_URL || 'http://localhost:3000'}/pricing?success=1&pack=${pack}`,
+      cancel_url:  `${process.env.APP_URL || 'http://localhost:3000'}/pricing?cancelled=1`,
+      metadata: { user_id: String(user.id), pack, credits: String(PACKS[pack].credits) },
     });
 
     res.json({ url: session.url });
   } catch (err) {
     console.error('[STRIPE] Checkout error:', err.message);
-    res.status(500).json({ error: 'Erreur lors de la création du paiement.' });
+    res.status(500).json({ error: 'Erreur Stripe: ' + err.message });
   }
 });
 
-// POST /api/stripe/portal — customer portal (manage subscription)
-router.post('/portal', async (req, res) => {
-  if (!stripe) return res.status(503).json({ error: 'Paiement non configuré.' });
-
-  const user = db.prepare('SELECT stripe_customer_id FROM users WHERE id = ?').get(req.user.id);
-  if (!user?.stripe_customer_id) {
-    return res.status(400).json({ error: 'Aucun abonnement actif.' });
-  }
-
-  try {
-    const session = await stripe.billingPortal.sessions.create({
-      customer: user.stripe_customer_id,
-      return_url: `${process.env.APP_URL || 'http://localhost:3000'}/pricing`,
-    });
-    res.json({ url: session.url });
-  } catch (err) {
-    console.error('[STRIPE] Portal error:', err.message);
-    res.status(500).json({ error: 'Erreur portail Stripe.' });
-  }
-});
-
-// GET /api/stripe/status — check if Stripe is configured
+// GET /api/stripe/status
 router.get('/status', (req, res) => {
   res.json({
     enabled: !!stripe,
-    plans: {
-      pro: { price: 29, configured: !!PLAN_PRICES.pro },
-      enterprise: { price: 79, configured: !!PLAN_PRICES.enterprise },
-    }
+    packs: Object.fromEntries(Object.entries(PACKS).map(([k, v]) => [k, { credits: v.credits, eur: v.eur, configured: !!v.price }]))
   });
 });
 
-module.exports = { router, stripe, STRIPE_WEBHOOK_SECRET, PLAN_CREDITS };
+module.exports = { router, stripe, STRIPE_WEBHOOK_SECRET, PACKS };
