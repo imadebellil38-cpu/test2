@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ProspectHunter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/shared.css?v=12">
+  <link rel="stylesheet" href="/style.css?v=12">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<header>
+  <div class="logo-icon" onclick="window.location.reload()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0a0a0a" stroke-width="2.5" stroke-linecap="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+  </div>
+  <div class="logo-text">Prospect<span>Hunter</span></div>
+  <span class="header-badge" id="header-plan">FREE</span>
+
+  <div class="header-right">
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()">🌙</button>
+    <div class="rappel-hdr-btn">
+      <button class="hdr-btn" onclick="toggleRappelPanel()" title="Rappels">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Rappels
+      </button>
+      <span class="rappel-badge" id="rappel-badge" style="display:none">0</span>
+    </div>
+    <div class="credits-badge" id="credits-badge">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M6 12h12"/></svg>
+      <span id="hdr-credits">-</span> crédits
+    </div>
+    <a class="hdr-btn" href="/pricing" id="upgrade-link" style="background:var(--text);color:var(--bg);border-color:transparent;font-weight:600">Upgrade</a>
+    <a class="hdr-btn" href="/pricing" id="plan-link" style="display:none">Mon abonnement</a>
+    <a class="hdr-btn" href="/admin" id="admin-link" style="display:none">Admin</a>
+    <button class="hdr-btn" onclick="logout()" style="color:var(--red-tx)">Fuir 🏃</button>
+  </div>
+</header>
+
+<main>
+  <!-- ── HERO ── -->
+  <div class="hero">
+    <div class="hero-eyebrow">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      L'outil ultime de la prospection 🔥
+    </div>
+    <h1>Trouve les business<br><em>qui vivent encore en 2005</em></h1>
+    <p>Pas de site web &middot; 0 reseaux sociaux &middot; telephone verifie &middot; CRM integre &middot; Pitch IA de folie</p>
+  </div>
+
+  <!-- ── SEARCH CARD ── -->
+  <div class="card">
+    <div class="card-title">Configure ta machine à prospects 🎯</div>
+
+    <!-- Niche -->
+    <div class="field" style="margin-bottom:1.25rem">
+      <label>Niche / C'est quoi ton game ? 🎮</label>
+      <div class="niche-cats" id="niche-cats"></div>
+      <select class="niche-select" id="niche-dropdown" onchange="onNicheSelect(this.value)">
+        <option value="" disabled selected>&larr; Choisis une categorie d'abord</option>
+      </select>
+      <div class="niche-custom" id="niche-custom">
+        <input class="inp" id="niche-custom-input" type="text" placeholder="Tape ta niche, champion... 🏆" />
+      </div>
+      <input type="hidden" id="niche" />
+    </div>
+
+    <!-- Search modes -->
+    <div class="field" style="margin-bottom:1.25rem">
+      <label>Mode de recherche 💡</label>
+      <div class="search-modes" id="search-modes">
+        <button type="button" class="search-mode on" data-mode="site" id="mode-site" onclick="setSearchMode('site')">
+          <span class="sm-icon">🔍</span>
+          <span class="sm-label">Sans site web</span>
+          <span class="sm-cost">1 credit / prospect</span>
+        </button>
+        <button type="button" class="search-mode" data-mode="social" id="mode-social" onclick="setSearchMode('social')">
+          <span class="sm-icon">📱</span>
+          <span class="sm-label">Sans réseaux sociaux</span>
+          <span class="sm-cost">1 credit / prospect</span>
+        </button>
+        <button type="button" class="search-mode" data-mode="both" id="mode-both" onclick="setSearchMode('both')">
+          <span class="sm-icon">🔥</span>
+          <span class="sm-label">Sans site + sans réseaux</span>
+          <span class="sm-cost">2 credits / prospect</span>
+        </button>
+        <button type="button" class="search-mode" data-mode="fewreviews" id="mode-fewreviews" onclick="setSearchMode('fewreviews')">
+          <span class="sm-icon">⭐</span>
+          <span class="sm-label">Peu d'avis (&lt;10)</span>
+          <span class="sm-cost">1 credit / prospect</span>
+        </button>
+        <button type="button" class="search-mode" data-mode="new" id="mode-new" onclick="setSearchMode('new')">
+          <span class="sm-icon">🆕</span>
+          <span class="sm-label">Nouveaux business</span>
+          <span class="sm-cost">1 credit / prospect</span>
+        </button>
+      </div>
+      <div id="mode-hint" style="font-size:.7rem;color:var(--muted);margin-top:.3rem;"></div>
+    </div>
+
+    <!-- Country -->
+    <div class="field" style="margin-bottom:1.5rem">
+      <label>Zone de prospection 🗺️</label>
+      <div class="ctry-row">
+        <button class="ctry on" id="btn-fr" onclick="setCountry('fr')">🇫🇷 France</button>
+        <button class="ctry"    id="btn-ch" onclick="setCountry('ch')">🇨🇭 Suisse</button>
+        <button class="ctry"    id="btn-be" onclick="setCountry('be')">🇧🇪 Belgique</button>
+        <button class="ctry"    id="btn-geo" onclick="activateGeoloc()">📍 Autour de moi</button>
+      </div>
+      <div id="geo-options" style="display:none;margin-top:.75rem;padding:.75rem 1rem;background:var(--surface);border:1px solid var(--border2);border-radius:8px;">
+        <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.5rem;">
+          <span style="font-size:.8rem;color:var(--text);font-weight:700;">📍 Position detectee</span>
+          <span id="geo-city" style="font-size:.75rem;color:var(--text2);"></span>
+        </div>
+        <div style="display:flex;align-items:center;gap:.75rem;">
+          <label style="font-size:.72rem;font-weight:600;color:var(--muted);white-space:nowrap;">Rayon :</label>
+          <input type="range" id="geo-radius" min="5" max="100" value="30" step="5" oninput="updateRadiusLabel()" style="flex:1;accent-color:var(--text2);cursor:pointer;" />
+          <span id="geo-radius-label" style="font-size:.85rem;font-weight:800;color:var(--text);min-width:50px;text-align:right;">30 km</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Smart filter -->
+    <div style="margin-bottom:1rem;">
+      <label style="display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.85rem;color:var(--text2);font-weight:600;">
+        <input type="checkbox" id="strict-filter" onchange="strictFilter=this.checked" style="width:18px;height:18px;accent-color:var(--text2);cursor:pointer;" />
+        Filtre IA anti-parasites 🤖
+      </label>
+      <div style="font-size:.72rem;color:var(--muted);margin-top:.3rem;margin-left:1.6rem;">
+        L'IA vire les résultats hors-sujet. Ex : tu cherches "Boulangerie" → elle dégage les Carrefour, Paul, Franprix qui vendent du pain mais sont pas des vraies boulangeries. Tu gardes que les vrais commerces indépendants.
+      </div>
+    </div>
+
+    <!-- Slider -->
+    <div id="slider-section" style="margin-bottom:1.25rem;background:var(--surface);border:1px solid var(--border2);border-radius:8px;padding:1rem 1.25rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;">
+        <label style="font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;">Combien de prospects tu veux aider ? 🚀</label>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <span id="prospects-count" style="font-size:1.2rem;font-weight:900;color:var(--text);">5</span>
+          <span style="font-size:.75rem;color:var(--muted);">prospects</span>
+          <span style="font-size:.75rem;color:var(--dim);">=</span>
+          <span id="credits-cost" style="font-size:1.2rem;font-weight:900;color:var(--text2);">5</span>
+          <span style="font-size:.75rem;color:var(--muted);">credits</span>
+        </div>
+      </div>
+      <input type="range" id="prospects-slider" min="1" max="50" value="5" oninput="updateProspectsSlider()" style="width:100%;accent-color:var(--text2);cursor:pointer;" />
+      <div style="display:flex;justify-content:space-between;font-size:.7rem;color:var(--muted);margin-top:.3rem;">
+        <span>1 prospect</span>
+        <span id="prospects-max-label">50 prospects (max)</span>
+      </div>
+    </div>
+
+    <!-- Launch button -->
+    <div style="display:flex;gap:.75rem;">
+      <button class="btn-search" id="btn-go" onclick="runSearch()" style="flex:1">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        Lancer la machine ⚡
+      </button>
+    </div>
+  </div>
+
+  <!-- ── ALERT ── -->
+  <div class="alert" id="alert">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <span id="alert-msg"></span>
+  </div>
+
+  <!-- ── LOADER ── -->
+  <div class="loader-bd" id="loader">
+    <div class="loader-box">
+      <div class="spinner"></div>
+      <div class="l-title" id="l-title">Recherche en cours...</div>
+      <div class="l-sub" id="l-sub" style="transition: opacity .3s;"></div>
+    </div>
+  </div>
+
+  <!-- ── EMPTY STATE ── -->
+  <div class="empty" id="empty">
+    <div style="font-size:3rem;margin-bottom:1rem;">🏜️</div>
+    <div id="empty-msg" style="font-size:1rem;font-weight:700;color:var(--text2);line-height:1.6;"></div>
+  </div>
+
+
+  <!-- ── SEARCH HISTORY ── -->
+  <div class="card" id="search-history" style="margin-top:1.5rem;">
+    <div class="card-title">📋 Tes recherches précédentes</div>
+    <div id="history-list"></div>
+  </div>
+
+  <!-- ── RAPPEL ALERT BANNER ── -->
+  <div class="rappel-alert-banner" id="rappel-alert-banner" style="display:none;">
+    <div class="rappel-alert-content">
+      <span class="rappel-alert-icon">⏰</span>
+      <span class="rappel-alert-text" id="rappel-alert-text">0 rappels en attente</span>
+    </div>
+    <button class="rappel-alert-btn" onclick="toggleRappelPanel()">Voir les rappels</button>
+    <button class="rappel-alert-close" onclick="dismissRappelAlert()">&times;</button>
+  </div>
+
+  <!-- ── ANALYTICS ── -->
+  <div class="card analytics-card" id="analytics-section" style="margin-top:1.5rem;">
+    <div class="card-title analytics-toggle" onclick="toggleAnalytics()">
+      <span>📊 Analytics</span>
+      <svg class="analytics-chevron" id="analytics-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+    </div>
+    <div class="analytics-body" id="analytics-body" style="display:none;">
+      <div class="analytics-charts">
+        <div class="analytics-chart-box">
+          <div class="analytics-chart-title">Prospects / jour (7j)</div>
+          <svg id="chart-daily" viewBox="0 0 320 160" class="analytics-svg"></svg>
+        </div>
+        <div class="analytics-chart-box">
+          <div class="analytics-chart-title">Conversion / semaine (4 sem.)</div>
+          <svg id="chart-weekly" viewBox="0 0 320 160" class="analytics-svg"></svg>
+        </div>
+      </div>
+      <div class="analytics-totals" id="analytics-totals"></div>
+      <div class="analytics-timeline-title">Activité récente</div>
+      <div class="analytics-timeline" id="analytics-timeline"></div>
+    </div>
+  </div>
+
+  <!-- ── RESULTS ── -->
+  <div id="res" style="display:none;margin-top:2rem;">
+
+    <!-- Dashboard -->
+    <div class="dash-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.5rem;">
+      <div class="dash-card dc-total" onclick="dashFilter('all')" style="cursor:pointer">
+        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;">
+          <div class="dash-icon">📊</div>
+          <div>
+            <div class="dash-val" id="stat-total">0</div>
+            <div class="dash-label">Prospects trouvés</div>
+          </div>
+        </div>
+        <div class="dash-sub" id="dash-todo-detail">0 à accompagner</div>
+      </div>
+      <div class="dash-card dc-called" onclick="dashFilter('called')" style="cursor:pointer">
+        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;">
+          <div class="dash-icon">📞</div>
+          <div>
+            <div class="dash-val" id="stat-called">0</div>
+            <div class="dash-label">Appelés 📞</div>
+          </div>
+        </div>
+        <div class="dash-progress"><div class="dash-progress-bar" id="progress-called" style="width:0%"></div></div>
+      </div>
+      <div class="dash-card dc-client" onclick="dashFilter('client')" style="cursor:pointer">
+        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;">
+          <div class="dash-icon">🎯</div>
+          <div>
+            <div class="dash-val" id="stat-client">0</div>
+            <div class="dash-label">Closés 💰</div>
+          </div>
+        </div>
+        <div class="dash-progress"><div class="dash-progress-bar" id="progress-client" style="width:0%"></div></div>
+      </div>
+      <div class="dash-card dc-rate" onclick="dashFilter('nope')" style="cursor:pointer">
+        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;">
+          <div class="dash-icon">📈</div>
+          <div>
+            <div class="dash-val" id="stat-rate">0%</div>
+            <div class="dash-label">Taux conversion</div>
+          </div>
+        </div>
+        <div class="dash-sub" id="dash-nope-detail">0 refusés</div>
+      </div>
+    </div>
+
+    <!-- Results bar -->
+    <div class="res-bar" style="display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <div class="kpi" style="display:flex;align-items:center;gap:.75rem;">
+          <svg class="kpi-ring" viewBox="0 0 48 48" width="48" height="48">
+            <circle cx="24" cy="24" r="22" stroke="var(--border)" fill="none" stroke-width="3"/>
+            <circle id="ring-fill" cx="24" cy="24" r="22" stroke="var(--text)" fill="none" stroke-width="3" stroke-dasharray="138.23" stroke-dashoffset="138.23" transform="rotate(-90 24 24)" style="transition:stroke-dashoffset .6s ease-out"/>
+          </svg>
+          <div>
+            <div class="kpi-n" id="counter">0</div>
+            <div class="kpi-l">prospects</div>
+          </div>
+        </div>
+      </div>
+      <div class="res-actions" style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;">
+        <button class="btn-batch" id="btn-batch" onclick="batchPitch()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+          Pitch IA en masse 🤖
+        </button>
+        <button class="btn-csv" onclick="exportCSV()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+          Export Excel
+        </button>
+        <button class="btn-csv" onclick="exportPDF()" style="border-color:rgba(255,65,65,.25);color:var(--red-tx);">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/>
+          </svg>
+          Export PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-wrap" style="flex-wrap:wrap;margin-bottom:1rem;">
+      <select class="sel" id="filter-status" onchange="applyFilter()">
+        <option value="all">Tous statuts</option>
+        <option value="todo">A appeler</option>
+        <option value="called">Appele</option>
+        <option value="nope">Pas interesse</option>
+        <option value="client">Client</option>
+      </select>
+      <select class="sel" id="filter-niche" onchange="applyFilter()">
+        <option value="all">Toutes niches</option>
+      </select>
+      <select class="sel" id="filter-age" onchange="applyFilter()">
+        <option value="all">Tous avis</option>
+        <option value="new">&lt; 50 avis</option>
+        <option value="mid">50-200 avis</option>
+        <option value="old">&gt; 200 avis</option>
+      </select>
+      <select class="sel" id="filter-signals" onchange="applyFilter()">
+        <option value="all">Tous signaux</option>
+        <option value="nosite">🔴 Pas de site</option>
+        <option value="nosocial">🟠 Pas de reseaux</option>
+        <option value="fewreviews">🟡 &lt; 5 avis</option>
+      </select>
+      <div style="display:flex;align-items:center;gap:.4rem;">
+        <label style="font-size:.72rem;font-weight:600;color:var(--muted);">Note min:</label>
+        <select class="sel" id="min-stars" onchange="applyFilter()">
+          <option value="0">Toutes</option>
+          <option value="3">3+</option>
+          <option value="3.5">3.5+</option>
+          <option value="4">4+</option>
+          <option value="4.5">4.5+</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th style="width:2.5rem"><input type="checkbox" id="select-all" onchange="toggleSelectAll(this)"></th>
+            <th>#</th>
+            <th>Nom</th>
+            <th>Telephone</th>
+            <th>Adresse</th>
+            <th class="sortable" id="th-rating" onclick="sortBy('rating')">Note <span class="sort-icon" id="si-rating">⇕</span></th>
+            <th class="sortable" id="th-reviews" onclick="sortBy('reviews')">Avis <span class="sort-icon" id="si-reviews">⇕</span></th>
+            <th class="sortable active" id="th-heat" onclick="sortBy('heat')">Chaleur <span class="sort-icon" id="si-heat">↓</span></th>
+            <th>Statut</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div id="pagination" style="display:flex;align-items:center;justify-content:center;gap:.4rem;margin-top:1rem;"></div>
+  </div>
+
+  <!-- ── REFERRAL ── -->
+  <div class="card" id="referral-section" style="display:none;margin-top:1.5rem;">
+    <div class="card-title">🎁 Parrainage — ramène tes potes</div>
+    <p style="font-size:.82rem;color:var(--text2);margin-bottom:1rem;">Ramène tes potes : <strong>+5 crédits gratos</strong> pour toi et ton filleul. C'est cadeau. 🎁</p>
+    <div style="display:flex;gap:.5rem;align-items:center;">
+      <input class="inp" id="ref-link" type="text" readonly style="flex:1;font-size:.78rem;color:var(--text2);" />
+      <button class="ctry" onclick="copyRefLink()" style="white-space:nowrap;">Copier le lien</button>
+    </div>
+    <div style="display:flex;gap:1.5rem;margin-top:1rem;">
+      <div>
+        <div class="referral-stat-n" id="ref-count">0</div>
+        <div class="referral-stat-l">Filleuls</div>
+      </div>
+      <div>
+        <div class="referral-stat-n" id="ref-credits">0</div>
+        <div class="referral-stat-l">Credits gagnes</div>
+      </div>
+    </div>
+  </div>
+</main>
+
+
+<!-- ── PROSPECT MODAL ── -->
+<div class="modal-bd" id="modal-bd" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="m-name" id="m-name"></div>
+        <div class="m-meta" id="m-meta"></div>
+      </div>
+      <button onclick="closeModal()" class="modal-close">&times;</button>
+    </div>
+    <div class="tabs">
+      <button class="tab on" data-tab="calc" onclick="showTab('calc')">💰 Ce qu'il perd</button>
+      <button class="tab" data-tab="pitch" onclick="showTab('pitch')">🎯 Pitch fatal</button>
+      <button class="tab" data-tab="fiche" onclick="showTab('fiche')">📋 Dossier</button>
+      <button class="tab" data-tab="crm" onclick="showTab('crm')">📝 Notes perso</button>
+    </div>
+
+    <!-- Tab: Calculator -->
+    <div class="tab-panel on" data-tab="calc">
+      <div id="calc-content"></div>
+    </div>
+
+    <!-- Tab: Pitch -->
+    <div class="tab-panel" data-tab="pitch">
+      <div style="display:flex;gap:.4rem;margin-bottom:1rem;flex-wrap:wrap;">
+        <button class="pitch-type-btn on" data-type="appel" onclick="setPitchType('appel')">📞 Appel</button>
+        <button class="pitch-type-btn" data-type="email" onclick="setPitchType('email')">📧 Email</button>
+        <button class="pitch-type-btn" data-type="sms" onclick="setPitchType('sms')">💬 SMS</button>
+        <button class="pitch-type-btn" data-type="dm" onclick="setPitchType('dm')">📱 DM</button>
+      </div>
+      <button class="btn-search" id="btn-gen" onclick="generatePitch()" style="margin-bottom:1rem;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+        Générer le pitch de ouf 🔥
+      </button>
+      <div id="pitch-zone"></div>
+    </div>
+
+    <!-- Tab: Fiche -->
+    <div class="tab-panel" data-tab="fiche">
+      <button class="btn-search" id="btn-fiche-gen" onclick="generateFiche()" style="margin-bottom:1rem;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Stalker ce prospect 👀
+      </button>
+      <div id="fiche-zone"></div>
+    </div>
+
+    <!-- Tab: CRM -->
+    <div class="tab-panel" data-tab="crm">
+      <div class="field">
+        <label>Notes</label>
+        <textarea class="crm-ta" id="m-notes" rows="5" placeholder="Balance tes infos sur cette proie... 🎯" oninput="debounceSave()"></textarea>
+      </div>
+      <div class="field">
+        <label>Date de rappel</label>
+        <input class="crm-date" id="m-rappel" type="date" oninput="debounceSave()" />
+      </div>
+      <div class="crm-saved" id="crm-saved">Sauvegarde !</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── RAPPEL PANEL ── -->
+<div class="rappel-overlay" id="rappel-overlay" onclick="if(event.target===this)toggleRappelPanel()">
+  <div class="rappel-panel">
+    <div class="rappel-panel-header">
+      <div class="rappel-panel-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Rappels
+      </div>
+      <button class="rappel-panel-close" onclick="toggleRappelPanel()">&times;</button>
+    </div>
+    <div class="rappel-tabs">
+      <button class="rappel-tab on" data-rtab="today" onclick="switchRappelTab('today')">Aujourd'hui</button>
+      <button class="rappel-tab" data-rtab="overdue" onclick="switchRappelTab('overdue')">En retard</button>
+      <button class="rappel-tab" data-rtab="upcoming" onclick="switchRappelTab('upcoming')">A venir</button>
+      <button class="rappel-tab" data-rtab="history" onclick="switchRappelTab('history')">Historique</button>
+    </div>
+    <div class="rappel-list" id="rappel-list"></div>
+  </div>
+</div>
+
+<!-- ── CALL TRACKER ── -->
+<div class="call-overlay" id="call-overlay">
+  <div class="call-box">
+    <div class="call-header">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+        <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.22 2 2 0 012.22.04L5.22.04a2 2 0 012 1.72c.13 1 .36 1.97.72 2.9a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.14-1.14a2 2 0 012.11-.45c.93.36 1.9.59 2.9.72a2 2 0 011.76 2.03z"/>
+      </svg>
+      Suivi d'appel
+    </div>
+    <div class="call-prospect" id="call-prospect-name"></div>
+
+    <!-- Step 1: Did they answer? -->
+    <div class="call-step on" id="call-step-1">
+      <div class="call-q">Il a eu le cran de décrocher ? 📞</div>
+      <div class="call-btns">
+        <button class="call-btn yes" onclick="callAnswer(true)">✓ Ouais il a répondu</button>
+        <button class="call-btn no" onclick="callAnswer(false)">✗ Le lâche a pas décroché</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Was it positive? -->
+    <div class="call-step" id="call-step-2">
+      <div class="call-q">Alors, il est tombé dans le piège ? 😈</div>
+      <div class="call-btns">
+        <button class="call-btn yes" onclick="callPositive(true)">🎉 Closé / Il est cuit !</button>
+        <button class="call-btn no" onclick="callPositive(false)">😤 L'ingrat a dit non</button>
+      </div>
+    </div>
+
+    <!-- Step: Objection -->
+    <div class="call-step" id="call-step-obj">
+      <div class="call-q">Quelle excuse bidon il a sorti ? 🙄</div>
+      <div class="call-obj-list">
+        <button class="call-obj-btn" onclick="selectObj(this)">« J'ai pas le temps » (classique)</button>
+        <button class="call-obj-btn" onclick="selectObj(this)">« J'ai déjà quelqu'un » (menteur)</button>
+        <button class="call-obj-btn" onclick="selectObj(this)">« J'ai pas le budget » (radin)</button>
+        <button class="call-obj-btn" onclick="selectObj(this)">« Ça m'intéresse pas » (aveugle)</button>
+        <button class="call-obj-btn" onclick="selectObj(this)">« Rappelez plus tard » (fuyeur)</button>
+      </div>
+      <input class="call-obj-input" id="call-obj-custom" type="text" placeholder="Autre excuse pourrie..." oninput="clearObjBtns()" />
+      <button class="call-confirm" onclick="confirmObj()">Valider</button>
+    </div>
+
+    <!-- Step: Set rappel (positive) -->
+    <div class="call-step" id="call-step-rappel">
+      <div class="call-q">🎉 ÉNORME ! Quand tu le revois pour encaisser ? 💰</div>
+      <input class="call-date-input" id="call-rappel-date" type="date" />
+      <button class="call-confirm" onclick="confirmRappel()">Valider le client</button>
+      <button class="call-skip" onclick="confirmRappel()">Pas de date</button>
+    </div>
+
+    <!-- Step: No answer → retry? -->
+    <div class="call-step" id="call-step-noanswer">
+      <div class="call-q">📞 Il se cache... On le traque quand ? 🎯</div>
+      <input class="call-date-input" id="call-retry-date" type="date" />
+      <button class="call-confirm" onclick="confirmRetry()">Programmer l'embuscade 🫡</button>
+      <button class="call-skip" onclick="closeCallTracker()">Tant pis, NEXT</button>
+    </div>
+
+    <!-- Step: Done -->
+    <div class="call-step" id="call-step-done">
+      <div class="call-result">
+        <div class="call-result-icon" id="call-done-icon"></div>
+        <div class="call-result-msg" id="call-done-msg"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── BULK ACTIONS BAR ── -->
+<div class="bulk-bar" id="bulk-bar">
+  <span class="bulk-count" id="bulk-count">0 selectionne</span>
+  <div style="display:flex;align-items:center;gap:.5rem;">
+    <select id="bulk-status-select" style="background:var(--surface);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:.4rem .6rem;font-size:.78rem;font-family:inherit;">
+      <option value="">Changer statut...</option>
+      <option value="todo">A appeler</option>
+      <option value="called">Appele</option>
+      <option value="nope">Pas interesse</option>
+      <option value="client">Client</option>
+    </select>
+    <button onclick="bulkSetStatus()" style="background:var(--text);border:none;color:var(--bg);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;">Appliquer</button>
+    <button onclick="bulkDelete()" style="background:var(--red-bg);border:1px solid var(--red-bd);color:var(--red-tx);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;font-weight:700;cursor:pointer;font-family:inherit;">Supprimer</button>
+    <button onclick="clearSelection()" style="background:none;border:1px solid var(--border2);color:var(--dim);border-radius:8px;padding:.4rem .8rem;font-size:.78rem;font-weight:600;cursor:pointer;font-family:inherit;">Annuler</button>
+  </div>
+</div>
+
+<!-- ── TOAST CONTAINER ── -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ── APP JS ── -->
+<script src="/app.js?v=12"></script>
+</body>
+</html>
