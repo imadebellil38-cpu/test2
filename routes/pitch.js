@@ -5,11 +5,8 @@ const db = require('../db');
 
 const router = Router();
 
-// API key from environment
-const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
-if (!ANTHROPIC_API_KEY) {
-  console.error('\x1b[31m[WARN] ANTHROPIC_API_KEY not set in .env — pitch generation will fail\x1b[0m');
-}
+// API key read at request time (not at module load) so hot .env changes work
+const getAnthropicKey = () => process.env.ANTHROPIC_API_KEY || null;
 
 const VALID_PITCH_TYPES = ['appel', 'email', 'sms', 'linkedin', 'dm', 'fiche', 'keywords'];
 
@@ -249,7 +246,7 @@ router.post('/', async (req, res) => {
 
   // ── Resolve API key ──
   const user = db.prepare('SELECT anthropic_key FROM users WHERE id = ?').get(req.user.id);
-  const apiKey = ANTHROPIC_API_KEY || (user && user.anthropic_key);
+  const apiKey = getAnthropicKey() || (user && user.anthropic_key);
   if (!apiKey) {
     return res.status(400).json({ error: 'Clé API Anthropic non configurée. Contactez l\'administrateur.' });
   }
@@ -274,7 +271,7 @@ router.post('/keywords', async (req, res) => {
   }
 
   const user = db.prepare('SELECT anthropic_key FROM users WHERE id = ?').get(req.user.id);
-  const apiKey = ANTHROPIC_API_KEY || (user && user.anthropic_key);
+  const apiKey = getAnthropicKey() || (user && user.anthropic_key);
   if (!apiKey) {
     return res.status(400).json({ error: 'Clé API Anthropic non configurée.' });
   }
@@ -320,7 +317,7 @@ router.post('/batch', async (req, res) => {
   const type = VALID_PITCH_TYPES.includes(pitchType) ? pitchType : 'appel';
 
   const user = db.prepare('SELECT anthropic_key FROM users WHERE id = ?').get(req.user.id);
-  const apiKey = ANTHROPIC_API_KEY || (user && user.anthropic_key);
+  const apiKey = getAnthropicKey() || (user && user.anthropic_key);
   if (!apiKey) {
     return res.status(400).json({ error: 'Cle API Anthropic non configuree.' });
   }
@@ -360,7 +357,7 @@ router.post('/extract-owners', async (req, res) => {
   if (!user || user.credits < 3) {
     return res.status(400).json({ error: `Crédits insuffisants (${user ? user.credits : 0}/3 requis).` });
   }
-  const apiKey = ANTHROPIC_API_KEY || user.anthropic_key;
+  const apiKey = getAnthropicKey() || user.anthropic_key;
   if (!apiKey) {
     return res.status(400).json({ error: 'Clé API Anthropic non configurée.' });
   }

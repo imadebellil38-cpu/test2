@@ -109,7 +109,8 @@ async function apiGet(url) {
 async function apiPut(url, body) {
   const r = await fetch(url, { method: 'PUT', headers: AUTH, body: JSON.stringify(body) });
   if (r.status === 401) { logout(); return null; }
-  return r.json();
+  const data = await r.json();
+  return r.ok ? data : { ...data, ok: false };
 }
 async function apiPost(url, body) {
   const r = await fetch(url, { method: 'POST', headers: AUTH, body: JSON.stringify(body) });
@@ -482,7 +483,7 @@ async function moveStage(id, stage) {
     prospect.pipeline_stage = oldStage;
     updateBadges();
     renderList();
-    showToast('Erreur lors du déplacement.', 'error');
+    showToast((res && res.error) || 'Erreur lors du déplacement.', 'error');
     return;
   }
 
