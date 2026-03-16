@@ -50,34 +50,34 @@ const STAGE_CLASS = {
 
 const EMPTY_STATE = {
   cold_call: {
-    icon: '🎯',
-    msg: 'Aucun prospect en Cold Call',
-    hint: 'Lance un scan pour trouver des prospects ↑',
+    icon: '🏜️',
+    msg: 'Désert ici... pas un prospect à l\'horizon',
+    hint: '⬆️ Lance la machine là-haut et remplis ce pipeline, champion !',
   },
   to_recall: {
-    icon: '🔄',
-    msg: 'Aucun prospect à rappeler',
-    hint: 'Les prospects intéressés apparaîtront ici',
+    icon: '📞',
+    msg: 'Personne à rappeler pour l\'instant',
+    hint: 'Clique "Intéressé" sur un prospect et il débarque ici comme par magie 🪄',
   },
   meeting_to_set: {
     icon: '📅',
-    msg: 'Aucun rendez-vous à poser',
-    hint: '',
+    msg: 'Aucun RDV à poser... pour l\'instant',
+    hint: 'Les prospects chauds finissent toujours par vouloir te voir 😎',
   },
   meeting_confirmed: {
-    icon: '✅',
-    msg: 'Aucun rendez-vous confirmé',
-    hint: '',
+    icon: '🤝',
+    msg: 'Pas encore de RDV confirmé',
+    hint: 'Quand un RDV est calé, il atterrit ici. Patience, ça vient !',
   },
   closed: {
-    icon: '💰',
-    msg: 'Aucun client closé',
-    hint: 'Vos deals gagnés apparaîtront ici',
+    icon: '🏆',
+    msg: 'Pas encore de close ? Allez champion !',
+    hint: 'C\'est ici que la magie opère — tes deals gagnés arrivent bientôt 💰',
   },
   refused: {
-    icon: '🚫',
-    msg: 'Aucun refus',
-    hint: '',
+    icon: '💪',
+    msg: 'Aucun refus — tu gères ou t\'as pas encore commencé ?',
+    hint: 'Les refus c\'est de l\'or : chaque objection améliore tes scripts',
   },
 };
 
@@ -253,6 +253,17 @@ function getFilteredProspects() {
       const addr  = (p.address || '').toLowerCase();
       const city  = (p.city    || '').toLowerCase();
       if (!name.includes(searchVal) && !phone.includes(searchVal) && !addr.includes(searchVal) && !city.includes(searchVal)) return false;
+    }
+    // Signal filter
+    if (typeof activeSignalFilter !== 'undefined' && activeSignalFilter !== 'all') {
+      switch (activeSignalFilter) {
+        case 'nosite': if (p.website_url && p.website_url !== '') return false; break;
+        case 'nofb': if (p.has_facebook !== 0 && p.has_facebook !== -1) return false; break;
+        case 'noig': if (p.has_instagram !== 0 && p.has_instagram !== -1) return false; break;
+        case 'notk': if (p.has_tiktok !== 0 && p.has_tiktok !== -1) return false; break;
+        case 'hot': if (calcHeat(p) < 8) return false; break;
+        case 'owner': if (!p.owner_name || p.owner_name === '') return false; break;
+      }
     }
     return true;
   });
@@ -654,12 +665,12 @@ async function _doMoveStage(id, stage, objection, rappel, meeting_date, notes, d
   }
 
   const stageMessages = {
-    to_recall:          '🔄 Déplacé vers À Rappeler',
-    meeting_to_set:     '📅 Rendez-vous à poser !',
-    meeting_confirmed:  '✅ RDV confirmé !',
-    closed:             '💰 CLOSÉ ! Bravo !',
-    refused:            `❌ Refus enregistré${objection ? ' — ' + objection : ''}.`,
-    cold_call:          '↩️ Remis en Cold Call.',
+    to_recall:          '🔄 Hop, dans la file d\'attente — tu le rappelles quand ?',
+    meeting_to_set:     '📅 Ça chauffe ! Pose ce RDV et ferme le deal 🔥',
+    meeting_confirmed:  '✅ RDV calé ! Plus qu\'à closer maintenant 💪',
+    closed:             '🎉 BOOM ! CLOSÉ ! Un de plus dans la poche ! 🏆💰',
+    refused:            `💔 Refus noté${objection ? ' — "' + objection + '"' : ''}. C'est de l'or pour tes scripts !`,
+    cold_call:          '↩️ Retour en Cold Call — on remet ça !',
   };
   const isSuccess = stage === 'closed';
   showToast(stageMessages[stage] || 'Étape mise à jour.', isSuccess ? 'success' : 'info');
@@ -709,7 +720,7 @@ async function logAttempt() {
   document.getElementById('attempt-note').value = '';
   _attemptType = ''; _attemptResult = '';
   document.querySelectorAll('.attempt-type-chip,.attempt-result-chip').forEach(c => c.classList.remove('chip-selected'));
-  showToast('Contact loggué ✅', 'success');
+  showToast('📝 Contact loggué — ton futur toi te remerciera !', 'success');
   loadAttempts(currentProspect.id);
 }
 
@@ -751,7 +762,7 @@ async function deleteProspect(id) {
     allProspects = allProspects.filter(p => p.id !== id);
     updateBadges();
     renderList();
-    showToast('Prospect supprimé.', 'info');
+    showToast('🗑️ Prospect supprimé — RIP 🪦', 'info');
   } else {
     showToast('Erreur lors de la suppression.', 'error');
   }
@@ -763,7 +774,7 @@ async function deleteProspect(id) {
 function copyPhone(phone, event) {
   if (event) event.stopPropagation();
   navigator.clipboard.writeText(phone).then(() => {
-    showToast(`📋 ${phone} copié !`, 'success', 2000);
+    showToast(`📋 ${phone} copié — va closer ça ! 💪`, 'success', 2000);
   }).catch(() => {
     showToast('Impossible de copier.', 'error');
   });
@@ -954,7 +965,7 @@ function copyPitch(btn) {
   const pitchEl = btn.previousElementSibling;
   if (!pitchEl) return;
   navigator.clipboard.writeText(pitchEl.textContent.trim()).then(() => {
-    showToast('Pitch copié !', 'success', 2000);
+    showToast('📋 Pitch copié — envoie la sauce ! 🔥', 'success', 2000);
     btn.textContent = '✓ Copié !';
     setTimeout(() => { btn.textContent = '📋 Copier le pitch'; }, 2000);
   });
@@ -1039,7 +1050,7 @@ async function submitAddProspect() {
     updateBadges();
     closeAddModal();
     switchTab('cold_call');
-    showToast(`${name} ajouté en Cold Call !`, 'success');
+    showToast(`🎯 ${name} ajouté — un de plus dans le viseur ! 🔫`, 'success');
   } catch (e) {
     if (errEl) { errEl.textContent = 'Erreur réseau.'; errEl.style.display = 'block'; }
   } finally {
@@ -1199,7 +1210,7 @@ async function launchScan() {
 
   if (!niche) {
     document.getElementById('scan-niche').focus();
-    showToast('Tape un métier avant de lancer !', 'warn');
+    showToast('🤔 Euh... tu veux chercher quoi exactement ? Tape un métier !', 'warn');
     return;
   }
 
@@ -1210,7 +1221,7 @@ async function launchScan() {
 
   if (btn)        btn.disabled = true;
   if (statusWrap) statusWrap.style.display = 'flex';
-  if (statusText) statusText.textContent   = 'Scan en cours...';
+  if (statusText) statusText.textContent   = '🔍 La machine tourne... on déniche les pépites...';
 
   // Animated progress bar (indeterminate feel)
   let progress = 0;
@@ -1236,15 +1247,15 @@ async function launchScan() {
     }
 
     const count = data.count || (data.prospects && data.prospects.length) || 0;
-    if (statusText) statusText.textContent = `✅ ${count} prospects ajoutés !`;
-    showToast(`🎯 ${count} prospects ajoutés en Cold Call`, 'success', 4000);
+    if (statusText) statusText.textContent = `🎯 ${count} pépites trouvées !`;
+    showToast(`🎯 ${count} prospects frais dans le pipeline — à toi de jouer ! 🚀`, 'success', 4000);
 
     await loadProspects();
     switchTab('cold_call');
 
   } catch (e) {
     clearInterval(progressTimer);
-    showToast('Erreur de connexion', 'error');
+    showToast('😵 Erreur de connexion — Internet est en pause café ?', 'error');
   } finally {
     if (btn) btn.disabled = false;
     setTimeout(() => {
@@ -1638,3 +1649,167 @@ async function loadAnalyse() {
    START
 ───────────────────────────────────────── */
 init();
+
+/* ══════════════════════════════════════════
+   PREVIOUS SEARCHES
+══════════════════════════════════════════ */
+function togglePrevSearches() {
+  const body = document.getElementById('prev-searches-body');
+  const btn = document.getElementById('prev-searches-toggle');
+  const isHidden = body.style.display === 'none';
+  body.style.display = isHidden ? 'block' : 'none';
+  btn.classList.toggle('open', isHidden);
+  if (isHidden) loadPrevSearches();
+}
+
+async function loadPrevSearches() {
+  const list = document.getElementById('prev-searches-list');
+  try {
+    const token = localStorage.getItem('ph_token');
+    const res = await fetch('/api/search/history', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!res.ok) throw new Error('Erreur');
+    const data = await res.json();
+    if (!data.history || data.history.length === 0) {
+      list.innerHTML = '<div class="prev-search-empty">Aucune recherche précédente.</div>';
+      return;
+    }
+    const modeLabels = { site: '🌐 Sans site', social: '📱 Sans réseaux', both: '🔥 Les deux', fewreviews: '⭐ <10 avis', owners: '🤖 Gérants IA', new: '🆕 Récents' };
+    list.innerHTML = data.history.slice(0, 10).map(s => {
+      const modeLabel = modeLabels[s.mode] || s.mode;
+      const d = new Date(s.created_at);
+      const dateStr = d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+      return `<div class="prev-search-card" onclick="rerunSearch('${(s.niche || '').replace(/'/g, "\'")}','${s.mode || 'site'}','${s.country || 'fr'}')">
+        <div class="prev-search-icon">${modeLabels[s.mode] ? modeLabels[s.mode].split(' ')[0] : '🔍'}</div>
+        <div class="prev-search-info">
+          <div class="prev-search-niche">${s.niche || 'Recherche'} — ${modeLabel}</div>
+          <div class="prev-search-meta">${dateStr} · ${s.country === 'ch' ? '🇨🇭' : s.country === 'be' ? '🇧🇪' : '🇫🇷'}</div>
+        </div>
+        <div class="prev-search-count">${s.results_count || '?'} résultats</div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    list.innerHTML = '<div class="prev-search-empty">Erreur de chargement.</div>';
+  }
+}
+
+function rerunSearch(niche, mode, country) {
+  const nicheInput = document.getElementById('scan-niche');
+  if (nicheInput) nicheInput.value = niche;
+  // Select mode
+  document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  // Select country
+  document.querySelectorAll('.flag-btn').forEach(b => b.classList.toggle('active', b.dataset.country === country));
+  // Open scan panel if closed
+  const scanBody = document.getElementById('scan-body');
+  if (scanBody && scanBody.style.display === 'none') toggleScanPanel();
+  showToast('🔍 Recherche pré-remplie — clique "Lancer" !');
+}
+
+/* ══════════════════════════════════════════
+   MASS ACTIONS: Pitch IA / Export Excel / Export PDF
+══════════════════════════════════════════ */
+async function massPitchIA() {
+  const prospects = getCurrentVisibleProspects();
+  if (!prospects || prospects.length === 0) return showToast('❌ Aucun prospect visible');
+  if (prospects.length > 20) return showToast('⚠️ Max 20 prospects à la fois');
+  showToast('🤖 Génération des pitchs IA en cours...');
+  let count = 0;
+  const token = localStorage.getItem('ph_token');
+  for (const p of prospects) {
+    try {
+      await fetch('/api/pitch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ prospect_id: p.id, type: 'appel' })
+      });
+      count++;
+    } catch (e) { /* skip */ }
+  }
+  showToast(`✅ ${count} pitchs générés !`);
+}
+
+function getCurrentVisibleProspects() {
+  if (typeof allProspects !== 'undefined' && typeof currentStage !== 'undefined') {
+    return allProspects.filter(p => p.stage === currentStage);
+  }
+  return [];
+}
+
+function exportExcel() {
+  const prospects = getCurrentVisibleProspects();
+  if (!prospects || prospects.length === 0) return showToast('❌ Aucun prospect à exporter');
+  const headers = ['Nom', 'Téléphone', 'Adresse', 'Site', 'Score', 'Stage', 'Notes'];
+  const rows = prospects.map(p => [
+    p.name || '', p.phone || '', p.address || '', p.website || '', p.heat_score || '', p.stage || '', (p.notes || '').replace(/\n/g, ' ')
+  ]);
+  let csv = '\uFEFF' + headers.join(';') + '\n' + rows.map(r => r.map(c => '"' + (c + '').replace(/"/g, '""') + '"').join(';')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'prospects_' + (currentStage || 'export') + '.csv';
+  a.click(); URL.revokeObjectURL(url);
+  showToast('📗 Export Excel téléchargé !');
+}
+
+function exportPDF() {
+  const prospects = getCurrentVisibleProspects();
+  if (!prospects || prospects.length === 0) return showToast('❌ Aucun prospect à exporter');
+  const heatLabels = { 5: '🔥🔥 Brûlant', 4: '🔥 Chaud', 3: '🌤️ Tiède', 2: '❄️ Froid', 1: '🧊 Glacial' };
+  let html = `<html><head><meta charset="utf-8"><title>ProspectHunter — Export</title>
+    <style>body{font-family:Arial,sans-serif;padding:2rem;color:#111}h1{font-size:1.4rem;margin-bottom:1rem}
+    table{width:100%;border-collapse:collapse;font-size:.8rem}th,td{border:1px solid #ddd;padding:.5rem;text-align:left}
+    th{background:#f5f5f5;font-weight:700}.badge{padding:.15rem .4rem;border-radius:4px;font-size:.7rem;font-weight:700}</style></head><body>
+    <h1>🎯 ProspectHunter — ${prospects.length} prospects (${currentStage || 'export'})</h1>
+    <p style="color:#666;font-size:.8rem">Exporté le ${new Date().toLocaleDateString('fr-FR')}</p>
+    <table><thead><tr><th>Nom</th><th>Téléphone</th><th>Adresse</th><th>Score</th><th>Signaux</th></tr></thead><tbody>`;
+  for (const p of prospects) {
+    const heat = heatLabels[p.heat_score] || '—';
+    const signals = [];
+    if (!p.website) signals.push('🌐 Sans site');
+    if (!p.has_facebook) signals.push('f/ Sans FB');
+    if (!p.has_instagram) signals.push('📸 Sans IG');
+    html += `<tr><td><strong>${p.name || ''}</strong></td><td>${p.phone || '—'}</td><td>${p.address || '—'}</td><td>${heat}</td><td>${signals.join(', ') || '—'}</td></tr>`;
+  }
+  html += '</tbody></table></body></html>';
+  const w = window.open('', '_blank');
+  w.document.write(html);
+  w.document.close();
+  setTimeout(() => { w.print(); }, 500);
+  showToast('📕 Export PDF ouvert pour impression !');
+}
+
+/* ══════════════════════════════════════════
+   SIGNAL FILTERS
+══════════════════════════════════════════ */
+let activeSignalFilter = 'all';
+
+function filterBySignal(signal, btn) {
+  activeSignalFilter = signal;
+  // Update active state
+  document.querySelectorAll('.sig-filter').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  applyFilters();
+}
+
+// Patch applyFilters to include signal filtering
+const _originalApplyFilters = typeof applyFilters === 'function' ? applyFilters : null;
+
+if (_originalApplyFilters) {
+  const _origRender = typeof renderProspects === 'function' ? renderProspects : null;
+  
+  // Override to add signal filtering after the original filter
+  window._signalFilterProspects = function(prospects) {
+    if (activeSignalFilter === 'all') return prospects;
+    return prospects.filter(p => {
+      switch (activeSignalFilter) {
+        case 'nosite': return !p.website_url && !p.website;
+        case 'nofb': return p.has_facebook === 0 || p.has_facebook === -1;
+        case 'noig': return p.has_instagram === 0 || p.has_instagram === -1;
+        case 'notk': return p.has_tiktok === 0 || p.has_tiktok === -1;
+        case 'hot': return (p.heat_score || 0) >= 4;
+        case 'owner': return p.owner_name && p.owner_name.length > 0;
+        default: return true;
+      }
+    });
+  };
+}

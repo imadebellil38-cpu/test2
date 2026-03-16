@@ -8,15 +8,15 @@
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      --bg: #04040f;
-      --grad: linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #0ea5e9 100%);
-      --grad2: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
-      --glow: rgba(124,58,237,.35);
-      --text: #f0f0ff;
-      --text2: #9090b8;
-      --muted: #50507a;
-      --border: rgba(124,58,237,.2);
-      --border2: rgba(124,58,237,.4);
+      --bg: #ffffff;
+      --grad: linear-gradient(135deg, #e06030 0%, #f0915a 100%);
+      --grad2: linear-gradient(135deg, #1863DC 0%, #4f9cf7 100%);
+      --glow: rgba(224,96,48,.2);
+      --text: #0f0f0f;
+      --text2: #555555;
+      --muted: #999999;
+      --border: rgba(0,0,0,.08);
+      --border2: rgba(0,0,0,.12);
     }
 
     body {
@@ -26,6 +26,7 @@
       display: flex; align-items: center; justify-content: center;
       overflow: hidden; position: relative;
       -webkit-font-smoothing: antialiased;
+      background: linear-gradient(180deg, #fff 0%, #f8f8fa 100%);
     }
 
     /* ── ANIMATED BACKGROUND ── */
@@ -36,9 +37,9 @@
       position: absolute; border-radius: 50%; filter: blur(80px); opacity: .25;
       animation: drift 12s ease-in-out infinite alternate;
     }
-    .orb-1 { width: 600px; height: 600px; background: #7c3aed; top: -200px; left: -150px; animation-delay: 0s; }
-    .orb-2 { width: 500px; height: 500px; background: #0ea5e9; bottom: -150px; right: -100px; animation-delay: -4s; }
-    .orb-3 { width: 300px; height: 300px; background: #f59e0b; top: 50%; left: 50%; transform: translate(-50%,-50%); animation-delay: -8s; }
+    .orb-1 { width: 600px; height: 600px; background: #e06030; top: -200px; left: -150px; animation-delay: 0s; opacity: .08; }
+    .orb-2 { width: 500px; height: 500px; background: #1863DC; bottom: -150px; right: -100px; animation-delay: -4s; opacity: .06; }
+    .orb-3 { width: 300px; height: 300px; background: #f0915a; top: 50%; left: 50%; transform: translate(-50%,-50%); animation-delay: -8s; opacity: .06; }
 
     @keyframes drift {
       0%   { transform: translate(0, 0) scale(1); }
@@ -50,8 +51,8 @@
       content: '';
       position: fixed; inset: 0; z-index: 0;
       background-image:
-        linear-gradient(rgba(124,58,237,.04) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(124,58,237,.04) 1px, transparent 1px);
+        linear-gradient(rgba(224,96,48,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(224,96,48,.04) 1px, transparent 1px);
       background-size: 40px 40px;
     }
 
@@ -70,15 +71,15 @@
     }
 
     .login-box {
-      background: rgba(10, 8, 30, .8);
+      background: rgba(255, 255, 255, .92);
       border: 1px solid var(--border2);
       border-radius: 20px;
       padding: 2.5rem;
       backdrop-filter: blur(30px);
       box-shadow:
-        0 0 0 1px rgba(124,58,237,.1),
-        0 20px 60px rgba(0,0,0,.6),
-        0 0 80px rgba(124,58,237,.12);
+        0 0 0 1px rgba(224,96,48,.1),
+        0 20px 60px rgba(0,0,0,.08),
+        0 0 80px rgba(224,96,48,.12);
     }
 
     /* ── LOGO ── */
@@ -93,7 +94,7 @@
     }
     @keyframes pulse-logo {
       0%, 100% { box-shadow: 0 8px 30px var(--glow); }
-      50%       { box-shadow: 0 8px 50px rgba(124,58,237,.6); }
+      50%       { box-shadow: 0 8px 50px rgba(224,96,48,.6); }
     }
     .logo h1 {
       font-size: 1.5rem; font-weight: 900; letter-spacing: -.04em;
@@ -130,16 +131,16 @@
     }
     .inp-wrap { position: relative; }
     .inp {
-      width: 100%; background: rgba(255,255,255,.04);
-      border: 1px solid rgba(124,58,237,.2);
+      width: 100%; background: rgba(0,0,0,.03);
+      border: 1px solid rgba(224,96,48,.2);
       border-radius: 10px; padding: .75rem 1rem; color: var(--text);
       font-size: .88rem; outline: none; font-family: inherit;
       transition: all .2s;
     }
     .inp:focus {
-      border-color: rgba(124,58,237,.6);
-      box-shadow: 0 0 0 3px rgba(124,58,237,.1);
-      background: rgba(124,58,237,.06);
+      border-color: rgba(224,96,48,.6);
+      box-shadow: 0 0 0 3px rgba(224,96,48,.1);
+      background: rgba(224,96,48,.06);
     }
     .inp::placeholder { color: var(--muted); }
 

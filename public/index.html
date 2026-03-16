@@ -43,10 +43,10 @@
     <div class="credits-badge" id="credits-badge">
       <span>💳</span>
       <span id="hstat-total">0</span>
-      <span>leads</span>
+      <span>crédits</span>
     </div>
-    <span class="user-email" id="user-email-display"></span>
-    <button class="hdr-btn hdr-btn-logout" onclick="logout()">Déconnexion</button>
+    <a href="/admin" class="hdr-btn hdr-btn-admin" title="Panel admin">⚙️ Admin</a>
+    <button class="hdr-btn hdr-btn-logout" onclick="logout()" title="Se déconnecter">🚪 Fuir</button>
   </div>
 </header>
 
@@ -56,7 +56,7 @@
   <!-- ── SCAN PANEL ── -->
   <div class="scan-panel" id="scan-panel">
     <div class="scan-panel-header">
-      <div class="scan-panel-title">🔍 Trouver des prospects</div>
+      <div class="scan-panel-title">⚙️ Configure ta machine à prospects</div>
       <button class="scan-toggle-btn" id="scan-toggle-btn" onclick="toggleScanPanel()" title="Réduire">▲</button>
     </div>
 
@@ -155,6 +155,37 @@
     </div>
   </div>
 
+  <!-- ── MASS ACTIONS BAR ── -->
+  <div class="mass-actions-bar" id="mass-actions-bar">
+    <div class="mass-actions-left">
+      <span class="mass-actions-label">⚡ Actions en masse</span>
+    </div>
+    <div class="mass-actions-right">
+      <button class="mass-btn mass-btn-ia" onclick="massPitchIA()" title="Générer un pitch IA pour tous les prospects visibles">
+        🤖 Pitch IA en masse
+      </button>
+      <button class="mass-btn mass-btn-excel" onclick="exportExcel()" title="Exporter les prospects en fichier Excel">
+        📗 Export Excel
+      </button>
+      <button class="mass-btn mass-btn-pdf" onclick="exportPDF()" title="Exporter les prospects en PDF">
+        📕 Export PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- ── PREVIOUS SEARCHES ── -->
+  <div class="prev-searches-section" id="prev-searches-section">
+    <div class="prev-searches-header">
+      <div class="prev-searches-title">🕓 Tes recherches précédentes</div>
+      <button class="prev-searches-toggle" id="prev-searches-toggle" onclick="togglePrevSearches()">▼</button>
+    </div>
+    <div class="prev-searches-body" id="prev-searches-body" style="display:none">
+      <div class="prev-searches-list" id="prev-searches-list">
+        <div class="prev-search-empty">Aucune recherche précédente.</div>
+      </div>
+    </div>
+  </div>
+
   <!-- ── PIPELINE TABS ── -->
   <nav class="pipeline-nav" id="pipeline-nav">
     <button class="pipe-tab active" data-stage="cold_call" onclick="switchTab('cold_call')">
@@ -188,6 +219,18 @@
   <div class="meeting-subtabs" id="meeting-subtabs" style="display:none">
     <button class="sub-tab active" data-sub="meeting_to_set" onclick="switchSubTab('meeting_to_set')">🗓️ À poser <span class="sub-tab-badge" id="badge-meeting_to_set"></span></button>
     <button class="sub-tab" data-sub="meeting_confirmed" onclick="switchSubTab('meeting_confirmed')">✅ Confirmés <span class="sub-tab-badge" id="badge-meeting_confirmed"></span></button>
+  </div>
+
+  <!-- ── SIGNAL FILTERS ── -->
+  <div class="signal-filters" id="signal-filters">
+    <span class="signal-filters-label">Filtrer :</span>
+    <button class="sig-filter active" data-signal="all" onclick="filterBySignal('all',this)">🎯 Tous</button>
+    <button class="sig-filter sig-f-nosite" data-signal="nosite" onclick="filterBySignal('nosite',this)">🌐 Sans site</button>
+    <button class="sig-filter sig-f-nofb" data-signal="nofb" onclick="filterBySignal('nofb',this)">f/ Sans Facebook</button>
+    <button class="sig-filter sig-f-noig" data-signal="noig" onclick="filterBySignal('noig',this)">📸 Sans Instagram</button>
+    <button class="sig-filter sig-f-notk" data-signal="notk" onclick="filterBySignal('notk',this)">♪ Sans TikTok</button>
+    <button class="sig-filter sig-f-hot" data-signal="hot" onclick="filterBySignal('hot',this)">🔥 Brûlants</button>
+    <button class="sig-filter sig-f-owner" data-signal="owner" onclick="filterBySignal('owner',this)">🧑 Avec gérant</button>
   </div>
 
   <!-- ── SEARCH BAR ── -->
@@ -290,6 +333,29 @@
     </div>
   </div>
 
+  <!-- ★ HISTORIQUE RECHERCHES — EN PREMIER, GRAND FORMAT ★ -->
+  <div class="sh-hero-section">
+    <div class="sh-hero-header">
+      <div class="sh-hero-title">
+        <span class="sh-hero-icon">🔍</span>
+        Historique des recherches
+        <span class="sh-hero-count" id="sh-total-count">0 recherches</span>
+      </div>
+      <div class="sh-filter-bar">
+        <button class="sh-filter-btn sh-filter-active" onclick="filterSearchHistory('all', this)">Toutes</button>
+        <button class="sh-filter-btn" onclick="filterSearchHistory('site', this)">🌐 Sans site</button>
+        <button class="sh-filter-btn" onclick="filterSearchHistory('social', this)">📱 Sans réseaux</button>
+        <button class="sh-filter-btn" onclick="filterSearchHistory('both', this)">🌐📱 Les deux</button>
+        <button class="sh-filter-btn" onclick="filterSearchHistory('fewreviews', this)">⭐ &lt;10 avis</button>
+        <button class="sh-filter-btn" onclick="filterSearchHistory('owners', this)">🤖 Gérants IA</button>
+        <button class="sh-filter-btn" onclick="filterSearchHistory('new', this)">🆕 Récents</button>
+      </div>
+    </div>
+    <div id="search-history-cards" class="sh-cards-grid">
+      <div class="activity-empty">Chargement...</div>
+    </div>
+  </div>
+
   <!-- KPI cards -->
   <div class="kpi-grid">
     <div class="kpi-card kpi-blue">
@@ -328,14 +394,6 @@
       <div class="pbar-row"><span class="pbar-label">📅 Rendez-vous</span><div class="pbar-track"><div class="pbar-fill pbar-meeting" id="pbar-meeting"></div></div><span class="pbar-count" id="pbar-meeting-n">0</span></div>
       <div class="pbar-row"><span class="pbar-label">✅ Closés</span><div class="pbar-track"><div class="pbar-fill pbar-closed" id="pbar-closed"></div></div><span class="pbar-count" id="pbar-closed-n">0</span></div>
       <div class="pbar-row"><span class="pbar-label">❌ Refusés</span><div class="pbar-track"><div class="pbar-fill pbar-refused" id="pbar-refused"></div></div><span class="pbar-count" id="pbar-refused-n">0</span></div>
-    </div>
-  </div>
-
-  <!-- Search history -->
-  <div class="analyse-section">
-    <div class="analyse-section-title">🔍 Historique des recherches</div>
-    <div id="search-history" class="search-history">
-      <div class="activity-empty">Aucune recherche enregistrée.</div>
     </div>
   </div>
 

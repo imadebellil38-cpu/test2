@@ -4,520 +4,250 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ProspectHunter — Le CRM des closeurs</title>
-  <meta name="description" content="Trouve les business sans site, sans réseaux. Pipeline CRM, Pitch IA, Historique contacts, Analyse complète. De la prospection à la signature.">
+  <meta name="description" content="Trouve les business sans site, sans réseaux. Pipeline CRM, Pitch IA, Historique contacts, Analyse complète.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    :root {
-      --bg: #03020e;
-      --surface: #07061a;
-      --card: #0d0c24;
-      --border: rgba(124,58,237,.18);
-      --border2: rgba(124,58,237,.3);
-      --text: #f0f0ff;
-      --text2: #9090b8;
-      --muted: #50507a;
-      --grad: linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #0ea5e9 100%);
-      --grad-warm: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
-      --grad-green: linear-gradient(135deg, #10b981 0%, #0ea5e9 100%);
-      --glow: rgba(124,58,237,.35);
-      --glow2: rgba(14,165,233,.25);
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg:#fff;--bg2:#f8f8fa;--text:#0f0f0f;--text2:#555;--muted:#999;
+      --accent:#e06030;--accent2:#1863DC;
+      --accent-light:rgba(224,96,48,.07);--accent-glow:rgba(224,96,48,.22);
+      --border:rgba(0,0,0,.06);--border2:rgba(0,0,0,.1);
+      --grad:linear-gradient(135deg,#e06030,#f0915a);
+      --grad2:linear-gradient(135deg,#1863DC,#4f9cf7);
+      --shadow-sm:0 2px 8px rgba(0,0,0,.04);--shadow-md:0 8px 30px rgba(0,0,0,.06);
+      --shadow-lg:0 20px 60px rgba(0,0,0,.08);--radius:16px;
     }
-    body {
-      background: var(--bg); color: var(--text);
-      font-family: 'Inter', sans-serif;
-      min-height: 100vh; line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
-    }
-    a { text-decoration: none; color: inherit; }
+    body{background:var(--bg);color:var(--text);font-family:'Inter',system-ui,sans-serif;min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    a{text-decoration:none;color:inherit}
+    ::selection{background:rgba(224,96,48,.15)}
 
-    /* ── BACKGROUND ── */
-    body::before {
-      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background:
-        radial-gradient(ellipse 90% 70% at 10% -10%, rgba(124,58,237,.12) 0%, transparent 55%),
-        radial-gradient(ellipse 70% 60% at 90% 110%, rgba(14,165,233,.08) 0%, transparent 55%),
-        radial-gradient(ellipse 50% 40% at 50% 50%, rgba(79,70,229,.05) 0%, transparent 70%);
-    }
-    body::after {
-      content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
-      background-image:
-        linear-gradient(rgba(124,58,237,.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(124,58,237,.025) 1px, transparent 1px);
-      background-size: 60px 60px;
-    }
-
-    canvas#bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: .5; }
+    /* ── DECORATIVE SHAPES ── */
+    .shape{position:absolute;border-radius:50%;pointer-events:none;z-index:0;filter:blur(80px);opacity:.5}
+    .shape-orange{background:rgba(224,96,48,.12)}
+    .shape-blue{background:rgba(24,99,220,.1)}
+    .shape-pink{background:rgba(236,72,153,.08)}
 
     /* ── NAV ── */
-    nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-      height: 66px; padding: 0 clamp(1rem, 5vw, 4rem);
-      display: flex; align-items: center;
-      background: rgba(3,2,14,.85); backdrop-filter: blur(24px);
-      border-bottom: 1px solid var(--border);
-      transition: background .3s;
-    }
-    nav.scrolled { background: rgba(3,2,14,.96); }
-    .nav-logo { display: flex; align-items: center; gap: .6rem; }
-    .nav-logo-icon {
-      width: 34px; height: 34px; background: var(--grad);
-      border-radius: 10px; display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem; box-shadow: 0 4px 20px var(--glow);
-    }
-    .nav-logo-text {
-      font-size: 1.05rem; font-weight: 900; letter-spacing: -.03em;
-      background: linear-gradient(135deg, #a78bfa, #818cf8, #38bdf8);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .nav-links { margin-left: auto; display: flex; align-items: center; gap: 1.5rem; }
-    .nav-link { font-size: .82rem; font-weight: 600; color: var(--muted); transition: color .15s; }
-    .nav-link:hover { color: var(--text); }
-    .nav-login {
-      padding: .42rem 1rem; border-radius: 8px; border: 1px solid var(--border2);
-      background: transparent; color: var(--text2); font-size: .82rem; font-weight: 600;
-      cursor: pointer; font-family: inherit; transition: all .18s;
-    }
-    .nav-login:hover { border-color: rgba(124,58,237,.5); color: var(--text); background: rgba(124,58,237,.08); }
-    .nav-cta {
-      padding: .44rem 1.15rem; border-radius: 8px; background: var(--grad);
-      color: #fff; font-size: .82rem; font-weight: 700; border: none;
-      cursor: pointer; font-family: inherit; transition: all .18s;
-      box-shadow: 0 4px 20px var(--glow); position: relative; overflow: hidden;
-    }
-    .nav-cta::after {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(rgba(255,255,255,.15), transparent);
-      opacity: 0; transition: opacity .2s;
-    }
-    .nav-cta:hover { transform: translateY(-1px); box-shadow: 0 6px 25px var(--glow); }
-    .nav-cta:hover::after { opacity: 1; }
+    nav{position:fixed;top:0;left:0;right:0;z-index:200;height:64px;padding:0 clamp(1rem,5vw,4rem);display:flex;align-items:center;background:rgba(255,255,255,.85);backdrop-filter:blur(20px) saturate(180%);border-bottom:1px solid var(--border);transition:all .3s}
+    nav.scrolled{box-shadow:var(--shadow-md)}
+    .nav-logo{display:flex;align-items:center;gap:.6rem}
+    .nav-logo-icon{width:36px;height:36px;background:var(--grad);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;box-shadow:0 4px 16px var(--accent-glow)}
+    .nav-logo-text{font-size:1.05rem;font-weight:900;letter-spacing:-.03em}
+    .nav-links{margin-left:auto;display:flex;align-items:center;gap:1.5rem}
+    .nav-link{font-size:.82rem;font-weight:600;color:var(--muted);transition:color .2s}
+    .nav-link:hover{color:var(--text)}
+    .nav-login{padding:.44rem 1.1rem;border-radius:9px;border:1.5px solid var(--border2);background:transparent;color:var(--text2);font-size:.82rem;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+    .nav-login:hover{border-color:var(--accent);color:var(--accent)}
+    .nav-cta{padding:.48rem 1.3rem;border-radius:9px;background:var(--grad);color:#fff;font-size:.82rem;font-weight:700;border:none;cursor:pointer;font-family:inherit;transition:all .25s;box-shadow:0 4px 16px var(--accent-glow)}
+    .nav-cta:hover{transform:translateY(-2px);box-shadow:0 8px 28px var(--accent-glow)}
 
     /* ── HERO ── */
-    .hero {
-      position: relative; z-index: 1;
-      padding: 10rem 2rem 6rem; text-align: center;
-    }
+    .hero{position:relative;z-index:1;padding:11rem 2rem 6rem;text-align:center;overflow:hidden}
+    .hero .shape-1{width:500px;height:500px;top:-150px;right:-100px}
+    .hero .shape-2{width:400px;height:400px;bottom:-100px;left:-80px}
+    .hero-badge{display:inline-flex;align-items:center;gap:.5rem;padding:.35rem 1rem;border-radius:999px;background:var(--accent-light);border:1px solid rgba(224,96,48,.2);font-size:.75rem;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.07em;margin-bottom:1.75rem}
+    .hero-badge-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(224,96,48,.5)}50%{box-shadow:0 0 0 8px rgba(224,96,48,0)}}
+    .hero h1{font-size:clamp(2.8rem,6.5vw,5rem);font-weight:900;line-height:1.06;letter-spacing:-.045em;max-width:820px;margin:0 auto 1.5rem}
+    .hero h1 .accent{color:var(--accent);position:relative;display:inline-block}
+    .hero h1 .accent::after{content:'';position:absolute;bottom:.05em;left:0;right:0;height:.12em;background:rgba(224,96,48,.15);border-radius:4px;z-index:-1}
+    .hero-sub{font-size:1.05rem;color:var(--text2);max-width:520px;margin:0 auto 2.5rem;line-height:1.75}
+    .hero-actions{display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;margin-bottom:3.5rem}
+    .btn-hero{padding:.85rem 2rem;border-radius:11px;font-size:.95rem;font-weight:800;cursor:pointer;font-family:inherit;transition:all .25s;position:relative;overflow:hidden}
+    .btn-primary{background:var(--grad);color:#fff;border:none;box-shadow:0 6px 24px var(--accent-glow)}
+    .btn-primary::after{content:'';position:absolute;top:-50%;left:-60%;width:40%;height:200%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);transform:skewX(-20deg);transition:left .5s}
+    .btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 40px var(--accent-glow)}
+    .btn-primary:hover::after{left:130%}
+    .btn-secondary{background:var(--bg);border:1.5px solid var(--border2);color:var(--text2)}
+    .btn-secondary:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
 
-    .hero-badge {
-      display: inline-flex; align-items: center; gap: .5rem;
-      padding: .35rem 1rem; border-radius: 999px;
-      background: rgba(124,58,237,.1); border: 1px solid rgba(124,58,237,.3);
-      font-size: .75rem; font-weight: 700; color: #a78bfa;
-      text-transform: uppercase; letter-spacing: .07em;
-      margin-bottom: 1.75rem;
-      animation: fadeSlideUp .6s cubic-bezier(.16,1,.3,1) both;
-    }
-    .hero-badge-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: #a78bfa; animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      0%,100% { box-shadow: 0 0 0 0 rgba(167,139,250,.6); }
-      50%      { box-shadow: 0 0 0 6px rgba(167,139,250,0); }
-    }
+    .signal-row{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:3.5rem}
+    .sig-pill{display:flex;align-items:center;gap:.3rem;padding:.3rem .8rem;border-radius:999px;font-size:.76rem;font-weight:700}
+    .sig-hot{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);color:#dc2626}
+    .sig-nosite{background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.15);color:#2563eb}
+    .sig-nofb{background:rgba(124,58,237,.06);border:1px solid rgba(124,58,237,.15);color:#7c3aed}
+    .sig-noig{background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.18);color:#d97706}
+    .sig-notk{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.15);color:#059669}
 
-    .hero h1 {
-      font-size: clamp(3rem, 7vw, 5.5rem);
-      font-weight: 900; line-height: 1.04; letter-spacing: -.05em;
-      max-width: 880px; margin: 0 auto 1.5rem;
-      animation: fadeSlideUp .7s cubic-bezier(.16,1,.3,1) .1s both;
-    }
-    .hero h1 .grad-text {
-      background: var(--grad);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .hero h1 .grad-warm {
-      background: var(--grad-warm);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-
-    .hero-sub {
-      font-size: 1.1rem; color: var(--text2); max-width: 520px;
-      margin: 0 auto 2.5rem; line-height: 1.7;
-      animation: fadeSlideUp .7s cubic-bezier(.16,1,.3,1) .2s both;
-    }
-
-    .hero-actions {
-      display: flex; gap: .8rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3.5rem;
-      animation: fadeSlideUp .7s cubic-bezier(.16,1,.3,1) .3s both;
-    }
-    .btn-hero {
-      padding: .9rem 2.2rem; border-radius: 10px; font-size: .96rem;
-      font-weight: 800; cursor: pointer; font-family: inherit;
-      transition: all .2s; position: relative; overflow: hidden;
-    }
-    .btn-hero-primary {
-      background: var(--grad); color: #fff; border: none;
-      box-shadow: 0 6px 30px var(--glow);
-    }
-    .btn-hero-primary::after {
-      content: ''; position: absolute; top: -50%; left: -60%;
-      width: 40%; height: 200%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,.25), transparent);
-      transform: skewX(-20deg); transition: left .5s;
-    }
-    .btn-hero-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px var(--glow); }
-    .btn-hero-primary:hover::after { left: 130%; }
-    .btn-hero-secondary {
-      background: rgba(255,255,255,.05); border: 1px solid var(--border2);
-      color: var(--text2);
-    }
-    .btn-hero-secondary:hover { background: rgba(124,58,237,.1); color: var(--text); border-color: rgba(124,58,237,.4); }
-
-    /* ── SIGNAL PILLS ── */
-    .signal-row {
-      display: flex; gap: .6rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem;
-      animation: fadeSlideUp .7s cubic-bezier(.16,1,.3,1) .4s both;
-    }
-    .sig-pill {
-      display: flex; align-items: center; gap: .35rem;
-      padding: .3rem .85rem; border-radius: 999px;
-      font-size: .78rem; font-weight: 700;
-      backdrop-filter: blur(10px);
-    }
-    .sig-nosite { background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3); color: #fca5a5; }
-    .sig-nofb   { background: rgba(79,70,229,.1);  border: 1px solid rgba(79,70,229,.3);  color: #a5b4fc; }
-    .sig-noig   { background: rgba(245,158,11,.1); border: 1px solid rgba(245,158,11,.3); color: #fde68a; }
-    .sig-notk   { background: rgba(16,185,129,.1); border: 1px solid rgba(16,185,129,.3); color: #6ee7b7; }
-    .sig-hot    { background: rgba(239,68,68,.15); border: 1px solid rgba(239,68,68,.4);  color: #fca5a5; animation: pulse 2s infinite; }
-
-    /* ── MOCK PIPELINE PREVIEW ── */
-    .pipeline-preview {
-      max-width: 900px; margin: 0 auto 1rem;
-      background: rgba(13,12,36,.8); border: 1px solid var(--border);
-      border-radius: 18px; overflow: hidden;
-      box-shadow: 0 30px 80px rgba(0,0,0,.5), 0 0 0 1px rgba(124,58,237,.1);
-      animation: fadeSlideUp .8s cubic-bezier(.16,1,.3,1) .5s both;
-    }
-    .preview-bar {
-      height: 40px; background: rgba(7,6,26,.9); border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; padding: 0 1rem; gap: .5rem;
-    }
-    .preview-dot { width: 10px; height: 10px; border-radius: 50%; }
-    .pd-red { background: #ef4444; } .pd-yellow { background: #f59e0b; } .pd-green { background: #22c55e; }
-    .preview-url {
-      flex: 1; text-align: center; font-size: .72rem; color: var(--muted);
-    }
-    .preview-body { padding: 1.5rem; }
-    .preview-tabs {
-      display: flex; gap: .3rem; background: rgba(255,255,255,.03);
-      border-radius: 10px; padding: 3px; margin-bottom: 1rem;
-    }
-    .preview-tab {
-      flex: 1; text-align: center; padding: .45rem; border-radius: 8px;
-      font-size: .72rem; font-weight: 700; color: var(--muted);
-    }
-    .preview-tab.on { background: var(--grad); color: #fff; }
-    .preview-rows { display: flex; flex-direction: column; gap: .5rem; }
-    .preview-row {
-      display: flex; align-items: center; gap: .75rem;
-      background: rgba(255,255,255,.03); border-radius: 10px; padding: .6rem .9rem;
-      border-left: 3px solid transparent;
-      animation: shimmerRow 3s ease-in-out infinite;
-    }
-    .preview-row:nth-child(1) { border-left-color: #3b82f6; animation-delay: 0s; }
-    .preview-row:nth-child(2) { border-left-color: #f59e0b; animation-delay: .15s; }
-    .preview-row:nth-child(3) { border-left-color: #a855f7; animation-delay: .3s; }
-    .preview-row:nth-child(4) { border-left-color: #22c55e; animation-delay: .45s; }
-    @keyframes shimmerRow {
-      0%,100% { background: rgba(255,255,255,.03); }
-      50%      { background: rgba(124,58,237,.05); }
-    }
-    .preview-name { font-size: .8rem; font-weight: 700; color: var(--text); flex: 1; }
-    .preview-phone { font-size: .73rem; color: var(--muted); }
-    .preview-badge {
-      font-size: .65rem; font-weight: 700; padding: .15rem .5rem; border-radius: 5px;
-    }
-    .pb-hot  { background: rgba(239,68,68,.15); color: #fca5a5; border: 1px solid rgba(239,68,68,.3); }
-    .pb-site { background: rgba(59,130,246,.1);  color: #93c5fd; border: 1px solid rgba(59,130,246,.25); }
-    .pb-rdv  { background: rgba(168,85,247,.1);  color: #d8b4fe; border: 1px solid rgba(168,85,247,.25); }
-    .pb-ok   { background: rgba(34,197,94,.1);   color: #86efac; border: 1px solid rgba(34,197,94,.25); }
+    /* ── MOCK PREVIEW ── */
+    .pipeline-preview{max-width:860px;margin:0 auto;background:#fff;border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.08),0 0 0 1px rgba(0,0,0,.03);transition:transform .6s cubic-bezier(.16,1,.3,1),box-shadow .6s}
+    .pipeline-preview:hover{transform:translateY(-6px);box-shadow:0 40px 100px rgba(0,0,0,.12)}
+    .preview-bar{height:42px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1rem;gap:.5rem}
+    .preview-dot{width:10px;height:10px;border-radius:50%}.pd-red{background:#ef4444}.pd-yellow{background:#f59e0b}.pd-green{background:#22c55e}
+    .preview-url{flex:1;text-align:center;font-size:.72rem;color:var(--muted)}
+    .preview-body{padding:1.5rem}
+    .preview-tabs{display:flex;gap:.3rem;background:var(--bg2);border-radius:10px;padding:3px;margin-bottom:1rem}
+    .preview-tab{flex:1;text-align:center;padding:.45rem;border-radius:8px;font-size:.72rem;font-weight:700;color:var(--muted);transition:all .2s}
+    .preview-tab.on{background:var(--grad);color:#fff}
+    .preview-rows{display:flex;flex-direction:column;gap:.5rem}
+    .preview-row{display:flex;align-items:center;gap:.75rem;background:var(--bg2);border-radius:10px;padding:.65rem .9rem;border-left:3px solid transparent;transition:all .4s cubic-bezier(.16,1,.3,1)}
+    .preview-row:hover{transform:translateX(6px);box-shadow:var(--shadow-sm)}
+    .preview-row:nth-child(1){border-left-color:#2563eb}.preview-row:nth-child(2){border-left-color:#f59e0b}.preview-row:nth-child(3){border-left-color:#7c3aed}.preview-row:nth-child(4){border-left-color:#22c55e}
+    .preview-name{font-size:.82rem;font-weight:700;flex:1}.preview-phone{font-size:.73rem;color:var(--muted)}
+    .preview-badge{font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:6px}
+    .pb-hot{background:rgba(239,68,68,.08);color:#dc2626;border:1px solid rgba(239,68,68,.18)}
+    .pb-site{background:rgba(37,99,235,.06);color:#2563eb;border:1px solid rgba(37,99,235,.12)}
+    .pb-rdv{background:rgba(124,58,237,.06);color:#7c3aed;border:1px solid rgba(124,58,237,.12)}
+    .pb-ok{background:rgba(16,185,129,.06);color:#059669;border:1px solid rgba(16,185,129,.12)}
 
     /* ── SECTIONS ── */
-    section { padding: 7rem 2rem; position: relative; z-index: 1; }
-    .section-inner { max-width: 1100px; margin: 0 auto; }
+    section{padding:7rem 2rem;position:relative;z-index:1;overflow:hidden}
+    .section-inner{max-width:1060px;margin:0 auto;position:relative;z-index:1}
+    .section-alt{background:var(--bg2)}
+    .section-badge{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .9rem;border-radius:999px;background:var(--accent-light);border:1px solid rgba(224,96,48,.15);font-size:.7rem;font-weight:800;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem}
+    .section-title{font-size:clamp(1.8rem,3.5vw,2.7rem);font-weight:900;line-height:1.12;letter-spacing:-.04em;margin-bottom:.75rem}
+    .section-title .g{color:var(--accent)}
+    .section-sub{font-size:.98rem;color:var(--text2);max-width:480px;line-height:1.7;margin-bottom:3rem}
 
-    .section-badge {
-      display: inline-flex; align-items: center; gap: .4rem;
-      padding: .28rem .85rem; border-radius: 999px;
-      background: rgba(124,58,237,.1); border: 1px solid rgba(124,58,237,.25);
-      font-size: .7rem; font-weight: 800; color: #a78bfa;
-      text-transform: uppercase; letter-spacing: .08em; margin-bottom: 1rem;
-    }
-    .section-title {
-      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
-      font-weight: 900; line-height: 1.1; letter-spacing: -.04em;
-      margin-bottom: .75rem;
-    }
-    .section-title .g { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .section-sub { font-size: 1rem; color: var(--text2); max-width: 500px; line-height: 1.7; margin-bottom: 3.5rem; }
+    /* ── ILLUSTRATION SVG inline ── */
+    .illust{position:absolute;z-index:0;pointer-events:none;opacity:.6}
+    .illust svg{width:100%;height:100%}
 
     /* ── FEATURES GRID ── */
-    .feat-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px;
-      background: var(--border); border: 1px solid var(--border);
-      border-radius: 18px; overflow: hidden;
-    }
-    .feat-card {
-      background: var(--surface); padding: 2rem 1.75rem;
-      transition: all .25s; position: relative; overflow: hidden;
-    }
-    .feat-card::before {
-      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
-      background: var(--grad); opacity: 0; transition: opacity .25s;
-    }
-    .feat-card:hover { background: rgba(124,58,237,.06); }
-    .feat-card:hover::before { opacity: 1; }
-    .feat-icon {
-      width: 44px; height: 44px; border-radius: 12px; margin-bottom: 1.1rem;
-      display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
-      background: rgba(124,58,237,.12); border: 1px solid rgba(124,58,237,.2);
-      transition: all .25s;
-    }
-    .feat-card:hover .feat-icon { background: rgba(124,58,237,.2); transform: scale(1.05); }
-    .feat-card h3 { font-size: .95rem; font-weight: 800; margin-bottom: .5rem; }
-    .feat-card p  { font-size: .84rem; color: var(--text2); line-height: 1.65; }
-    .feat-new {
-      display: inline-block; font-size: .6rem; font-weight: 800; padding: .12rem .4rem;
-      border-radius: 4px; background: var(--grad); color: #fff; margin-left: .4rem;
-      text-transform: uppercase; letter-spacing: .04em; vertical-align: middle;
-    }
+    .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+    .feat-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.8rem 1.5rem;transition:all .4s cubic-bezier(.16,1,.3,1);position:relative;overflow:hidden}
+    .feat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad);transform:scaleX(0);transform-origin:left;transition:transform .5s cubic-bezier(.16,1,.3,1)}
+    .feat-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);border-color:rgba(224,96,48,.15)}
+    .feat-card:hover::after{transform:scaleX(1)}
+    .feat-icon{width:50px;height:50px;border-radius:14px;margin-bottom:1rem;display:flex;align-items:center;justify-content:center;font-size:1.4rem;background:var(--accent-light);transition:all .4s cubic-bezier(.16,1,.3,1)}
+    .feat-card:hover .feat-icon{background:rgba(224,96,48,.14);transform:scale(1.1) rotate(-3deg)}
+    .feat-card h3{font-size:.95rem;font-weight:800;margin-bottom:.5rem}
+    .feat-card p{font-size:.84rem;color:var(--text2);line-height:1.65}
+    .feat-new{display:inline-block;font-size:.6rem;font-weight:800;padding:.12rem .45rem;border-radius:5px;background:var(--grad);color:#fff;margin-left:.4rem;text-transform:uppercase;letter-spacing:.04em;vertical-align:middle}
 
-    /* ── PIPELINE SECTION ── */
-    .pipeline-section { background: rgba(124,58,237,.03); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-    .pipeline-stages {
-      display: flex; gap: 0; align-items: stretch;
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 16px; overflow: hidden;
-    }
-    .ps-stage {
-      flex: 1; padding: 1.4rem 1rem; text-align: center;
-      border-right: 1px solid var(--border); position: relative;
-      transition: all .2s;
-    }
-    .ps-stage:last-child { border-right: none; }
-    .ps-stage:hover { background: rgba(124,58,237,.05); }
-    .ps-arrow {
-      position: absolute; right: -10px; top: 50%; transform: translateY(-50%);
-      font-size: .8rem; color: var(--muted); z-index: 2;
-    }
-    .ps-icon { font-size: 1.5rem; margin-bottom: .5rem; }
-    .ps-label { font-size: .72rem; font-weight: 800; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; }
-    .ps-stage:nth-child(1) .ps-icon { filter: drop-shadow(0 0 8px #3b82f6); }
-    .ps-stage:nth-child(2) .ps-icon { filter: drop-shadow(0 0 8px #f59e0b); }
-    .ps-stage:nth-child(3) .ps-icon { filter: drop-shadow(0 0 8px #a855f7); }
-    .ps-stage:nth-child(4) .ps-icon { filter: drop-shadow(0 0 8px #10b981); }
-    .ps-stage:nth-child(5) .ps-icon { filter: drop-shadow(0 0 8px #22c55e); animation: pulse-win 2s infinite; }
-    @keyframes pulse-win {
-      0%,100% { transform: scale(1); }
-      50%      { transform: scale(1.15); }
-    }
+    /* ── PIPELINE ── */
+    .pipeline-stages{display:flex;gap:0;align-items:stretch;background:#fff;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm)}
+    .ps-stage{flex:1;padding:1.5rem 1rem;text-align:center;border-right:1px solid var(--border);position:relative;transition:all .3s}
+    .ps-stage:last-child{border-right:none}
+    .ps-stage:hover{background:var(--accent-light)}
+    .ps-stage:hover .ps-icon{transform:scale(1.2)}
+    .ps-arrow{position:absolute;right:-8px;top:50%;transform:translateY(-50%);font-size:.8rem;color:var(--muted);z-index:2}
+    .ps-icon{font-size:1.6rem;margin-bottom:.5rem;transition:transform .3s cubic-bezier(.16,1,.3,1)}
+    .ps-label{font-size:.72rem;font-weight:800;color:var(--text2);text-transform:uppercase;letter-spacing:.05em}
 
-    /* ── SEARCH MODES ── */
-    .modes-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem;
-    }
-    .mode-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 14px; padding: 1.4rem; transition: all .22s; cursor: default;
-    }
-    .mode-card:hover { border-color: rgba(124,58,237,.4); background: rgba(124,58,237,.06); transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,.3); }
-    .mode-card-icon { font-size: 1.5rem; margin-bottom: .7rem; }
-    .mode-card-title { font-size: .88rem; font-weight: 800; margin-bottom: .35rem; }
-    .mode-card-desc  { font-size: .8rem; color: var(--text2); line-height: 1.55; }
-    .mode-tag {
-      display: inline-block; font-size: .65rem; font-weight: 700; padding: .15rem .5rem;
-      border-radius: 5px; margin-top: .6rem;
-    }
-    .tag-violet  { background: rgba(124,58,237,.15); color: #a78bfa; border: 1px solid rgba(124,58,237,.3); }
-    .tag-blue    { background: rgba(59,130,246,.12);  color: #93c5fd; border: 1px solid rgba(59,130,246,.25); }
-    .tag-amber   { background: rgba(245,158,11,.12);  color: #fde68a; border: 1px solid rgba(245,158,11,.25); }
-    .tag-green   { background: rgba(16,185,129,.12);  color: #6ee7b7; border: 1px solid rgba(16,185,129,.25); }
-    .tag-pink    { background: rgba(236,72,153,.12);  color: #f9a8d4; border: 1px solid rgba(236,72,153,.25); }
+    /* ── MODES ── */
+    .modes-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.85rem}
+    .mode-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;transition:all .4s cubic-bezier(.16,1,.3,1);cursor:default}
+    .mode-card:hover{transform:translateY(-5px) scale(1.01);box-shadow:var(--shadow-lg);border-color:rgba(224,96,48,.18)}
+    .mode-card-icon{font-size:1.6rem;margin-bottom:.7rem;transition:transform .3s}
+    .mode-card:hover .mode-card-icon{transform:scale(1.15) rotate(-5deg)}
+    .mode-card-title{font-size:.9rem;font-weight:800;margin-bottom:.35rem}
+    .mode-card-desc{font-size:.82rem;color:var(--text2);line-height:1.6}
+    .mode-tag{display:inline-block;font-size:.65rem;font-weight:700;padding:.18rem .5rem;border-radius:6px;margin-top:.6rem}
+    .tag-orange{background:rgba(224,96,48,.08);color:var(--accent);border:1px solid rgba(224,96,48,.18)}
+    .tag-blue{background:rgba(37,99,235,.06);color:#2563eb;border:1px solid rgba(37,99,235,.12)}
+    .tag-violet{background:rgba(124,58,237,.06);color:#7c3aed;border:1px solid rgba(124,58,237,.12)}
+    .tag-green{background:rgba(16,185,129,.06);color:#059669;border:1px solid rgba(16,185,129,.12)}
+    .tag-pink{background:rgba(236,72,153,.06);color:#db2777;border:1px solid rgba(236,72,153,.12)}
 
-    /* ── STATS BAND ── */
-    .stats-band {
-      background: rgba(124,58,237,.05); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
-    }
-    .stats-row { display: flex; justify-content: center; gap: 4rem; flex-wrap: wrap; }
-    .stat { text-align: center; }
-    .stat-num {
-      font-size: 2.8rem; font-weight: 900; letter-spacing: -.05em;
-      background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-    }
-    .stat-label { font-size: .8rem; color: var(--muted); font-weight: 600; margin-top: .25rem; }
+    /* ── STATS ── */
+    .stats-row{display:flex;justify-content:center;gap:4rem;flex-wrap:wrap}
+    .stat{text-align:center}
+    .stat-num{font-size:3.2rem;font-weight:900;letter-spacing:-.05em;color:var(--accent)}
+    .stat-label{font-size:.8rem;color:var(--muted);font-weight:600;margin-top:.2rem}
 
-    /* ── CRM FEATURES ── */
-    .crm-list { display: flex; flex-direction: column; gap: 1rem; }
-    .crm-item {
-      display: flex; align-items: flex-start; gap: 1rem;
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 14px; padding: 1.2rem 1.5rem; transition: all .2s;
-    }
-    .crm-item:hover { border-color: rgba(124,58,237,.35); background: rgba(124,58,237,.05); transform: translateX(4px); }
-    .crm-item-icon {
-      width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
-    }
-    .ci-violet { background: rgba(124,58,237,.15); }
-    .ci-blue   { background: rgba(59,130,246,.12);  }
-    .ci-amber  { background: rgba(245,158,11,.12);  }
-    .ci-green  { background: rgba(16,185,129,.12);  }
-    .ci-pink   { background: rgba(236,72,153,.12);  }
-    .crm-item-text h4 { font-size: .9rem; font-weight: 800; margin-bottom: .25rem; }
-    .crm-item-text p  { font-size: .82rem; color: var(--text2); line-height: 1.55; }
+    /* ── CRM ── */
+    .crm-list{display:flex;flex-direction:column;gap:.8rem}
+    .crm-item{display:flex;align-items:flex-start;gap:1rem;background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem 1.5rem;transition:all .4s cubic-bezier(.16,1,.3,1)}
+    .crm-item:hover{transform:translateX(8px);box-shadow:var(--shadow-md);border-color:rgba(224,96,48,.12)}
+    .crm-item-icon{width:44px;height:44px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;background:var(--accent-light);transition:transform .3s}
+    .crm-item:hover .crm-item-icon{transform:scale(1.1) rotate(-3deg)}
+    .crm-item-text h4{font-size:.9rem;font-weight:800;margin-bottom:.25rem}
+    .crm-item-text p{font-size:.82rem;color:var(--text2);line-height:1.6}
 
-    /* ── HOW IT WORKS ── */
-    .steps-row {
-      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; position: relative;
-    }
-    .steps-row::before {
-      content: ''; position: absolute; top: 2.1rem; left: 16%; right: 16%;
-      height: 2px;
-      background: linear-gradient(90deg, rgba(124,58,237,.5), rgba(14,165,233,.5));
-    }
-    .step-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 16px; padding: 2rem 1.5rem; text-align: center; transition: all .22s;
-    }
-    .step-card:hover { border-color: rgba(124,58,237,.4); transform: translateY(-4px); box-shadow: 0 15px 40px rgba(0,0,0,.3); }
-    .step-num {
-      width: 46px; height: 46px; border-radius: 50%; margin: 0 auto 1rem;
-      background: var(--grad); display: flex; align-items: center; justify-content: center;
-      font-size: .95rem; font-weight: 900; color: #fff;
-      box-shadow: 0 6px 25px var(--glow);
-    }
-    .step-card h3 { font-size: .95rem; font-weight: 800; margin-bottom: .5rem; }
-    .step-card p  { font-size: .83rem; color: var(--text2); line-height: 1.65; }
+    /* ── STEPS ── */
+    .steps-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;position:relative}
+    .steps-row::before{content:'';position:absolute;top:2.2rem;left:16%;right:16%;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px}
+    .step-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:2rem 1.5rem;text-align:center;transition:all .4s cubic-bezier(.16,1,.3,1)}
+    .step-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg)}
+    .step-num{width:48px;height:48px;border-radius:50%;margin:0 auto 1rem;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:900;color:#fff;box-shadow:0 6px 20px var(--accent-glow);transition:transform .3s}
+    .step-card:hover .step-num{transform:scale(1.15)}
+    .step-card h3{font-size:.95rem;font-weight:800;margin-bottom:.5rem}
+    .step-card p{font-size:.84rem;color:var(--text2);line-height:1.65}
 
     /* ── PRICING ── */
-    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
-    .price-card {
-      background: var(--card); border: 1px solid var(--border);
-      border-radius: 18px; padding: 2rem 1.75rem;
-      display: flex; flex-direction: column; position: relative;
-      transition: all .22s;
-    }
-    .price-card:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,.4); }
-    .price-card.featured {
-      border-color: rgba(124,58,237,.5);
-      background: linear-gradient(180deg, rgba(124,58,237,.08), rgba(79,70,229,.04));
-      box-shadow: 0 0 0 1px rgba(124,58,237,.2), 0 20px 60px rgba(124,58,237,.15);
-    }
-    .price-featured-tag {
-      position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
-      background: var(--grad); color: #fff; font-size: .65rem; font-weight: 800;
-      padding: .28rem 1.1rem; border-radius: 999px; white-space: nowrap;
-      text-transform: uppercase; letter-spacing: .05em; box-shadow: 0 4px 15px var(--glow);
-    }
-    .price-plan {
-      font-size: .72rem; font-weight: 800; text-transform: uppercase;
-      letter-spacing: .08em; color: var(--muted); margin-bottom: .5rem;
-    }
-    .price-plan.g { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-    .price-amount { font-size: 2.8rem; font-weight: 900; letter-spacing: -.05em; margin-bottom: .15rem; }
-    .price-amount small { font-size: .82rem; font-weight: 500; color: var(--muted); }
-    .price-desc { font-size: .82rem; color: var(--text2); margin-bottom: 1.5rem; }
-    .price-features { list-style: none; flex: 1; margin-bottom: 1.75rem; }
-    .price-features li {
-      padding: .42rem 0; font-size: .84rem; color: var(--text2);
-      display: flex; align-items: center; gap: .55rem; border-bottom: 1px solid rgba(255,255,255,.04);
-    }
-    .price-features li:last-child { border-bottom: none; }
-    .price-check { color: #a78bfa; font-size: .85rem; flex-shrink: 0; }
-    .price-btn {
-      width: 100%; padding: .78rem; border-radius: 10px;
-      font-size: .86rem; font-weight: 800; cursor: pointer;
-      border: none; font-family: inherit; transition: all .2s;
-    }
-    .price-btn-outline {
-      background: rgba(255,255,255,.05); border: 1px solid var(--border2); color: var(--text2);
-    }
-    .price-btn-outline:hover { background: rgba(124,58,237,.1); color: var(--text); border-color: rgba(124,58,237,.4); }
-    .price-btn-filled {
-      background: var(--grad); color: #fff; box-shadow: 0 6px 25px var(--glow);
-    }
-    .price-btn-filled:hover { transform: translateY(-1px); box-shadow: 0 10px 35px var(--glow); }
+    .pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem}
+    .price-card{background:#fff;border:1px solid var(--border);border-radius:20px;padding:2.2rem 1.8rem;display:flex;flex-direction:column;position:relative;transition:all .4s cubic-bezier(.16,1,.3,1)}
+    .price-card:hover{transform:translateY(-6px);box-shadow:0 30px 80px rgba(0,0,0,.1)}
+    .price-card.featured{border-color:rgba(224,96,48,.3);background:linear-gradient(180deg,rgba(224,96,48,.03),rgba(255,138,80,.02));box-shadow:0 0 0 1px rgba(224,96,48,.1),var(--shadow-lg)}
+    .price-featured-tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:var(--grad);color:#fff;font-size:.65rem;font-weight:800;padding:.3rem 1.2rem;border-radius:999px;white-space:nowrap;text-transform:uppercase;letter-spacing:.05em;box-shadow:0 4px 12px var(--accent-glow)}
+    .price-plan{font-size:.72rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.5rem}
+    .price-plan.g{color:var(--accent)}
+    .price-amount{font-size:2.8rem;font-weight:900;letter-spacing:-.05em;margin-bottom:.15rem}
+    .price-amount small{font-size:.82rem;font-weight:500;color:var(--muted)}
+    .price-desc{font-size:.82rem;color:var(--text2);margin-bottom:1.5rem}
+    .price-features{list-style:none;flex:1;margin-bottom:1.75rem}
+    .price-features li{padding:.42rem 0;font-size:.84rem;color:var(--text2);display:flex;align-items:center;gap:.55rem;border-bottom:1px solid var(--border)}
+    .price-features li:last-child{border-bottom:none}
+    .price-check{color:var(--accent);font-size:.85rem;flex-shrink:0}
+    .price-btn{width:100%;padding:.8rem;border-radius:11px;font-size:.86rem;font-weight:800;cursor:pointer;border:none;font-family:inherit;transition:all .25s}
+    .price-btn-outline{background:var(--bg2);border:1.5px solid var(--border2);color:var(--text2)}
+    .price-btn-outline:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
+    .price-btn-filled{background:var(--grad);color:#fff;box-shadow:0 6px 20px var(--accent-glow)}
+    .price-btn-filled:hover{transform:translateY(-2px);box-shadow:0 10px 32px var(--accent-glow)}
 
-    /* ── CTA SECTION ── */
-    .cta-section { text-align: center; }
-    .cta-inner {
-      max-width: 700px; margin: 0 auto;
-      background: linear-gradient(135deg, rgba(124,58,237,.12), rgba(14,165,233,.08));
-      border: 1px solid rgba(124,58,237,.25); border-radius: 24px; padding: 4rem 3rem;
-      position: relative; overflow: hidden;
-    }
-    .cta-inner::before {
-      content: ''; position: absolute; top: -50%; left: -10%; right: -10%; height: 200%;
-      background: radial-gradient(ellipse, rgba(124,58,237,.1) 0%, transparent 60%);
-      pointer-events: none;
-    }
-    .cta-inner h2 {
-      font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 900; letter-spacing: -.04em;
-      margin-bottom: .75rem; position: relative;
-    }
-    .cta-inner p { font-size: 1rem; color: var(--text2); margin-bottom: 2rem; position: relative; }
+    /* ── CTA ── */
+    .cta-section{text-align:center}
+    .cta-inner{max-width:700px;margin:0 auto;background:linear-gradient(135deg,rgba(224,96,48,.06),rgba(24,99,220,.04));border:1px solid rgba(224,96,48,.12);border-radius:24px;padding:4rem 3rem;position:relative;overflow:hidden}
+    .cta-inner::before{content:'';position:absolute;width:300px;height:300px;border-radius:50%;background:rgba(224,96,48,.06);top:-80px;right:-80px;filter:blur(60px)}
+    .cta-inner h2{font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:900;letter-spacing:-.04em;margin-bottom:.75rem;position:relative}
+    .cta-inner p{font-size:1rem;color:var(--text2);margin-bottom:2rem;position:relative}
 
     /* ── FOOTER ── */
-    footer {
-      padding: 2.5rem 2rem; border-top: 1px solid var(--border); position: relative; z-index: 1;
-      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
-      max-width: 1100px; margin: 0 auto;
-    }
-    .footer-logo { display: flex; align-items: center; gap: .5rem; }
-    .footer-logo-icon { font-size: 1.1rem; }
-    .footer-logo-text { font-size: .85rem; font-weight: 800; color: var(--text2); }
-    footer p { font-size: .75rem; color: var(--muted); }
+    footer{padding:2.5rem 2rem;border-top:1px solid var(--border);position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;max-width:1060px;margin:0 auto}
+    .footer-logo{display:flex;align-items:center;gap:.5rem}
+    .footer-logo-icon{font-size:1.1rem}
+    .footer-logo-text{font-size:.85rem;font-weight:800;color:var(--text2)}
+    footer p{font-size:.75rem;color:var(--muted)}
 
-    /* ── ANIMATIONS ── */
-    @keyframes fadeSlideUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    .fade-up {
-      opacity: 0; transform: translateY(20px);
-      transition: opacity .6s cubic-bezier(.16,1,.3,1), transform .6s cubic-bezier(.16,1,.3,1);
-    }
-    .fade-up.visible { opacity: 1; transform: translateY(0); }
-    .fade-up-d1 { transition-delay: .1s; }
-    .fade-up-d2 { transition-delay: .2s; }
-    .fade-up-d3 { transition-delay: .3s; }
+    /* ── FLOATING DECORATIONS ── */
+    .float-el{position:absolute;pointer-events:none;z-index:0}
+    .float-circle{border-radius:50%;border:2px solid rgba(224,96,48,.12)}
+    .float-square{border-radius:8px;border:2px solid rgba(24,99,220,.1);transform:rotate(45deg)}
+    .float-dot{border-radius:50%;background:var(--accent);opacity:.15}
+    @keyframes floatY{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+    @keyframes floatR{0%,100%{transform:rotate(0deg)}50%{transform:rotate(8deg)}}
+    .anim-float{animation:floatY 4s ease-in-out infinite}
+    .anim-float-slow{animation:floatY 6s ease-in-out infinite}
+    .anim-rotate{animation:floatR 8s ease-in-out infinite}
+
+    /* ── SCROLL ANIMATIONS ── */
+    .reveal{opacity:0;transform:translateY(35px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+    .reveal-left{opacity:0;transform:translateX(-40px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
+    .reveal-left.visible{opacity:1;transform:translateX(0)}
+    .reveal-right{opacity:0;transform:translateX(40px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
+    .reveal-right.visible{opacity:1;transform:translateX(0)}
+    .reveal-scale{opacity:0;transform:scale(.92);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
+    .reveal-scale.visible{opacity:1;transform:scale(1)}
+    .stagger>*{opacity:0;transform:translateY(25px);transition:opacity .6s cubic-bezier(.16,1,.3,1),transform .6s cubic-bezier(.16,1,.3,1)}
+    .stagger.visible>*{opacity:1;transform:translateY(0)}
+    .stagger.visible>*:nth-child(1){transition-delay:.05s}
+    .stagger.visible>*:nth-child(2){transition-delay:.1s}
+    .stagger.visible>*:nth-child(3){transition-delay:.15s}
+    .stagger.visible>*:nth-child(4){transition-delay:.2s}
+    .stagger.visible>*:nth-child(5){transition-delay:.25s}
+    .stagger.visible>*:nth-child(6){transition-delay:.3s}
+    .stagger.visible>*:nth-child(7){transition-delay:.35s}
+    .stagger.visible>*:nth-child(8){transition-delay:.4s}
+    .stagger.visible>*:nth-child(9){transition-delay:.45s}
+
+    @keyframes heroIn{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+    .ha{animation:heroIn .8s cubic-bezier(.16,1,.3,1) both}
+    .ha1{animation-delay:.1s}.ha2{animation-delay:.2s}.ha3{animation-delay:.3s}.ha4{animation-delay:.4s}.ha5{animation-delay:.55s}
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 900px) {
-      .feat-grid { grid-template-columns: 1fr 1fr; }
-      .modes-grid { grid-template-columns: 1fr 1fr; }
-      .steps-row { grid-template-columns: 1fr; gap: 1rem; }
-      .steps-row::before { display: none; }
-      .pricing-grid { grid-template-columns: 1fr; max-width: 400px; margin: 0 auto; }
-      .pipeline-stages { flex-wrap: wrap; }
-      .ps-stage { flex-basis: 50%; }
-      .stats-row { gap: 2rem; }
-    }
-    @media (max-width: 640px) {
-      .feat-grid { grid-template-columns: 1fr; }
-      .modes-grid { grid-template-columns: 1fr; }
-      .hero { padding: 8rem 1.25rem 4rem; }
-      section { padding: 5rem 1.25rem; }
-      .nav-link { display: none; }
-      .cta-inner { padding: 2.5rem 1.5rem; }
-      .preview-row .preview-phone { display: none; }
-    }
+    @media(max-width:900px){.feat-grid{grid-template-columns:1fr 1fr}.modes-grid{grid-template-columns:1fr 1fr}.steps-row{grid-template-columns:1fr;gap:1rem}.steps-row::before{display:none}.pricing-grid{grid-template-columns:1fr;max-width:400px;margin:0 auto}.pipeline-stages{flex-wrap:wrap}.ps-stage{flex-basis:50%}.stats-row{gap:2rem}.float-el{display:none}}
+    @media(max-width:640px){.feat-grid{grid-template-columns:1fr}.modes-grid{grid-template-columns:1fr}.hero{padding:8rem 1.25rem 3.5rem}section{padding:5rem 1.25rem}.nav-link{display:none}.cta-inner{padding:2.5rem 1.5rem}.preview-row .preview-phone{display:none}}
   </style>
 </head>
 <body>
 
-<canvas id="bg"></canvas>
-
 <!-- ── NAV ── -->
 <nav id="nav">
-  <a class="nav-logo" href="/">
-    <div class="nav-logo-icon">🎯</div>
-    <span class="nav-logo-text">ProspectHunter</span>
-  </a>
+  <a class="nav-logo" href="/"><div class="nav-logo-icon">🎯</div><span class="nav-logo-text">ProspectHunter</span></a>
   <div class="nav-links">
     <a class="nav-link" href="#features">Fonctionnalités</a>
     <a class="nav-link" href="#pipeline">Pipeline</a>
@@ -530,23 +260,23 @@
 
 <!-- ── HERO ── -->
 <section class="hero">
-  <div class="hero-badge">
-    <div class="hero-badge-dot"></div>
-    Le CRM des closeurs — A à Z
-  </div>
-  <h1>
-    Trouve les business qui vivent<br>
-    <span class="grad-text">encore en 2005</span>
-  </h1>
-  <p class="hero-sub">
-    Scan Google Places · Pipeline CRM 6 étapes · Pitch IA contextuel · Historique des contacts · Analyse complète
-  </p>
-  <div class="hero-actions">
-    <a class="btn-hero btn-hero-primary" href="/login?tab=register">Commencer gratuitement 🚀</a>
-    <a class="btn-hero btn-hero-secondary" href="#features">Voir les fonctionnalités</a>
-  </div>
+  <!-- Decorative shapes -->
+  <div class="shape shape-orange shape-1" style="width:500px;height:500px;top:-150px;right:-100px"></div>
+  <div class="shape shape-blue shape-2" style="width:400px;height:400px;bottom:-100px;left:-80px"></div>
+  <div class="float-el float-circle anim-float" style="width:60px;height:60px;top:20%;left:8%"></div>
+  <div class="float-el float-square anim-float-slow" style="width:40px;height:40px;top:30%;right:10%"></div>
+  <div class="float-el float-dot anim-float" style="width:12px;height:12px;top:60%;left:5%;animation-delay:1s"></div>
+  <div class="float-el float-dot anim-float-slow" style="width:8px;height:8px;top:15%;right:15%;animation-delay:.5s"></div>
+  <div class="float-el float-circle anim-rotate" style="width:35px;height:35px;bottom:25%;right:6%"></div>
 
-  <div class="signal-row">
+  <div class="hero-badge ha"><div class="hero-badge-dot"></div>Le CRM des closeurs — A à Z</div>
+  <h1 class="ha ha1">Trouve les business qui vivent<br><span class="accent">encore en 2005</span></h1>
+  <p class="hero-sub ha ha2">Scan Google Places · Pipeline CRM 6 étapes · Pitch IA contextuel · Historique des contacts · Analyse complète</p>
+  <div class="hero-actions ha ha3">
+    <a class="btn-hero btn-primary" href="/login?tab=register">Commencer gratuitement 🚀</a>
+    <a class="btn-hero btn-secondary" href="#features">Voir les fonctionnalités</a>
+  </div>
+  <div class="signal-row ha ha4">
     <span class="sig-pill sig-hot">🔥🔥 Brûlant</span>
     <span class="sig-pill sig-nosite">🌐 Sans site</span>
     <span class="sig-pill sig-nofb">f/ Sans Facebook</span>
@@ -554,56 +284,27 @@
     <span class="sig-pill sig-notk">♪ Sans TikTok</span>
   </div>
 
-  <!-- MOCK APP PREVIEW -->
-  <div class="pipeline-preview">
-    <div class="preview-bar">
-      <div class="preview-dot pd-red"></div>
-      <div class="preview-dot pd-yellow"></div>
-      <div class="preview-dot pd-green"></div>
-      <div class="preview-url">localhost:3000 — ProspectHunter</div>
-    </div>
+  <div class="pipeline-preview ha ha5">
+    <div class="preview-bar"><div class="preview-dot pd-red"></div><div class="preview-dot pd-yellow"></div><div class="preview-dot pd-green"></div><div class="preview-url">prospecthunter.app — Dashboard</div></div>
     <div class="preview-body">
-      <div class="preview-tabs">
-        <div class="preview-tab on">📞 Cold Call (12)</div>
-        <div class="preview-tab">🔄 À Rappeler (4)</div>
-        <div class="preview-tab">📅 Rendez-vous (2)</div>
-        <div class="preview-tab">✅ Closés (3)</div>
-      </div>
+      <div class="preview-tabs"><div class="preview-tab on">📞 Cold Call (12)</div><div class="preview-tab">🔄 À Rappeler (4)</div><div class="preview-tab">📅 Rendez-vous (2)</div><div class="preview-tab">✅ Closés (3)</div></div>
       <div class="preview-rows">
-        <div class="preview-row">
-          <div class="preview-name">Arslan Carreleur & Maçon</div>
-          <div class="preview-phone">📞 07 58 04 56 54</div>
-          <span class="preview-badge pb-hot">🔥🔥 Brûlant</span>
-          <span class="preview-badge pb-site">🌐 Sans site</span>
-        </div>
-        <div class="preview-row">
-          <div class="preview-name">Boulangerie du Marais</div>
-          <div class="preview-phone">📞 01 40 27 91 97</div>
-          <span class="preview-badge pb-hot">🔥 Chaud</span>
-          <span class="preview-badge pb-site">📱 Sans réseaux</span>
-        </div>
-        <div class="preview-row">
-          <div class="preview-name">Jacques Électricien Paris</div>
-          <div class="preview-phone">📞 07 56 92 75 31</div>
-          <span class="preview-badge pb-rdv">📅 RDV 17 mars 10h</span>
-        </div>
-        <div class="preview-row">
-          <div class="preview-name">Caroflex Plomberie</div>
-          <div class="preview-phone">📞 06 35 11 48 53</div>
-          <span class="preview-badge pb-ok">✅ Closé — Site vitrine</span>
-        </div>
+        <div class="preview-row"><div class="preview-name">Arslan Carreleur & Maçon</div><div class="preview-phone">📞 07 58 04 56 54</div><span class="preview-badge pb-hot">🔥🔥 Brûlant</span><span class="preview-badge pb-site">🌐 Sans site</span></div>
+        <div class="preview-row"><div class="preview-name">Boulangerie du Marais</div><div class="preview-phone">📞 01 40 27 91 97</div><span class="preview-badge pb-hot">🔥 Chaud</span><span class="preview-badge pb-site">📱 Sans réseaux</span></div>
+        <div class="preview-row"><div class="preview-name">Jacques Électricien Paris</div><div class="preview-phone">📞 07 56 92 75 31</div><span class="preview-badge pb-rdv">📅 RDV 17 mars 10h</span></div>
+        <div class="preview-row"><div class="preview-name">Caroflex Plomberie</div><div class="preview-phone">📞 06 35 11 48 53</div><span class="preview-badge pb-ok">✅ Closé — Site vitrine</span></div>
       </div>
     </div>
   </div>
 </section>
 
 <!-- ── STATS ── -->
-<section class="stats-band" style="padding: 3.5rem 2rem;">
+<section class="section-alt" style="padding:3.5rem 2rem">
   <div class="section-inner">
-    <div class="stats-row fade-up">
-      <div class="stat"><div class="stat-num">6</div><div class="stat-label">Modes de recherche IA</div></div>
-      <div class="stat"><div class="stat-num">6</div><div class="stat-label">Étapes pipeline CRM</div></div>
-      <div class="stat"><div class="stat-num">7</div><div class="stat-label">Types de pitch IA</div></div>
+    <div class="stats-row reveal stagger">
+      <div class="stat"><div class="stat-num" data-target="6">0</div><div class="stat-label">Modes de recherche IA</div></div>
+      <div class="stat"><div class="stat-num" data-target="6">0</div><div class="stat-label">Étapes pipeline CRM</div></div>
+      <div class="stat"><div class="stat-num" data-target="7">0</div><div class="stat-label">Types de pitch IA</div></div>
       <div class="stat"><div class="stat-num">∞</div><div class="stat-label">Prospects à trouver</div></div>
     </div>
   </div>
@@ -611,125 +312,49 @@
 
 <!-- ── FEATURES ── -->
 <section id="features">
-  <div class="section-inner">
-    <div class="section-badge fade-up">✨ Fonctionnalités</div>
-    <h2 class="section-title fade-up">Tout ce qu'il faut pour <span class="g">closer A à Z</span></h2>
-    <p class="section-sub fade-up">De la recherche du prospect à la signature du contrat — tout dans un seul outil.</p>
+  <!-- Decorative -->
+  <div class="float-el float-circle anim-float" style="width:80px;height:80px;top:10%;right:3%"></div>
+  <div class="float-el float-dot anim-float-slow" style="width:14px;height:14px;bottom:15%;left:4%;animation-delay:.8s"></div>
+  <div class="shape shape-pink" style="width:350px;height:350px;bottom:-120px;right:-100px"></div>
 
-    <div class="feat-grid fade-up">
-      <div class="feat-card">
-        <div class="feat-icon">🔍</div>
-        <h3>Recherche Google Places</h3>
-        <p>Scanne les business par niche et par ville en France, Suisse, Belgique. Jusqu'à 200 prospects par recherche.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon">📊</div>
-        <h3>Score de chaleur IA</h3>
-        <p>Chaque prospect reçoit un score 🔥🔥 Brûlant → ❄️ Froid selon les signaux détectés. Priorise tes appels.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon">📱</div>
-        <h3>Détection réseaux sociaux</h3>
-        <p>Vérifie la présence sur Facebook, Instagram, TikTok instantanément. Sans site + sans réseaux = jackpot.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon">🎯</div>
-        <h3>Pitch IA contextuel <span class="feat-new">IA</span></h3>
-        <p>7 types de pitch générés par Claude IA : Appel, Email, SMS, DM, LinkedIn — adaptés au stade du prospect.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon">📞</div>
-        <h3>Historique des contacts <span class="feat-new">NEW</span></h3>
-        <p>Log chaque appel, SMS, email avec le résultat. Timeline complète sur chaque fiche prospect.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon">💰</div>
-        <h3>Deal tracker <span class="feat-new">NEW</span></h3>
-        <p>À la signature : type de prestation, date, récurrence (one-shot / mensuel). Ton CA toujours à jour.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon">🔔</div>
-        <h3>Agenda & Rappels</h3>
-        <p>Rappels et RDV triés par urgence. Notifications navigateur. Plus jamais un suivi oublié.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon">📈</div>
-        <h3>Analyse complète</h3>
-        <p>Taux de closing, rapport des objections, historique des recherches, activité récente. Analyse tout.</p>
-      </div>
-      <div class="feat-card">
-        <div class="feat-icon">🤖</div>
-        <h3>Extraction des gérants <span class="feat-new">IA</span></h3>
-        <p>Claude IA identifie le nom du gérant dans chaque business. Perso + direct = meilleur taux de réponse.</p>
-      </div>
+  <div class="section-inner">
+    <div class="section-badge reveal">✨ Fonctionnalités</div>
+    <h2 class="section-title reveal">Tout ce qu'il faut pour <span class="g">closer A à Z</span></h2>
+    <p class="section-sub reveal">De la recherche du prospect à la signature du contrat — tout dans un seul outil.</p>
+    <div class="feat-grid reveal stagger">
+      <div class="feat-card"><div class="feat-icon">🔍</div><h3>Recherche Google Places</h3><p>Scanne les business par niche et par ville en France, Suisse, Belgique. Jusqu'à 200 prospects par recherche.</p></div>
+      <div class="feat-card"><div class="feat-icon">📊</div><h3>Score de chaleur IA</h3><p>Chaque prospect reçoit un score 🔥🔥 Brûlant → ❄️ Froid selon les signaux détectés.</p></div>
+      <div class="feat-card"><div class="feat-icon">📱</div><h3>Détection réseaux sociaux</h3><p>Vérifie la présence sur Facebook, Instagram, TikTok instantanément.</p></div>
+      <div class="feat-card"><div class="feat-icon">🎯</div><h3>Pitch IA contextuel <span class="feat-new">IA</span></h3><p>7 types de pitch générés par Claude IA : Appel, Email, SMS, DM, LinkedIn.</p></div>
+      <div class="feat-card"><div class="feat-icon">📞</div><h3>Historique contacts <span class="feat-new">NEW</span></h3><p>Log chaque appel, SMS, email avec résultat. Timeline complète par prospect.</p></div>
+      <div class="feat-card"><div class="feat-icon">💰</div><h3>Deal tracker <span class="feat-new">NEW</span></h3><p>Type de prestation, date, récurrence. Ton CA toujours à jour.</p></div>
+      <div class="feat-card"><div class="feat-icon">🔔</div><h3>Agenda & Rappels</h3><p>Rappels et RDV triés par urgence. Plus jamais un suivi oublié.</p></div>
+      <div class="feat-card"><div class="feat-icon">📈</div><h3>Analyse complète</h3><p>Taux de closing, rapport des objections, historique des recherches.</p></div>
+      <div class="feat-card"><div class="feat-icon">🤖</div><h3>Extraction gérants <span class="feat-new">IA</span></h3><p>Claude IA identifie le nom du gérant. Perso + direct = meilleur taux.</p></div>
     </div>
   </div>
 </section>
 
 <!-- ── PIPELINE ── -->
-<section id="pipeline" class="pipeline-section">
+<section id="pipeline" class="section-alt">
+  <div class="float-el float-square anim-rotate" style="width:50px;height:50px;top:12%;left:4%"></div>
   <div class="section-inner">
-    <div class="section-badge fade-up">📋 Pipeline CRM</div>
-    <h2 class="section-title fade-up">6 étapes. <span class="g">Du contact au closing.</span></h2>
-    <p class="section-sub fade-up">Chaque prospect avance dans le pipeline. Tu sais exactement où tu en es avec chacun.</p>
-
-    <div class="pipeline-stages fade-up">
-      <div class="ps-stage">
-        <div class="ps-icon">📞</div>
-        <div class="ps-label">Cold Call</div>
-        <div class="ps-arrow">›</div>
-      </div>
-      <div class="ps-stage">
-        <div class="ps-icon">🔄</div>
-        <div class="ps-label">À Rappeler</div>
-        <div class="ps-arrow">›</div>
-      </div>
-      <div class="ps-stage">
-        <div class="ps-icon">📅</div>
-        <div class="ps-label">RDV à poser</div>
-        <div class="ps-arrow">›</div>
-      </div>
-      <div class="ps-stage">
-        <div class="ps-icon">✅</div>
-        <div class="ps-label">RDV Confirmé</div>
-        <div class="ps-arrow">›</div>
-      </div>
-      <div class="ps-stage">
-        <div class="ps-icon">💰</div>
-        <div class="ps-label">CLOSÉ !</div>
-      </div>
+    <div class="section-badge reveal">📋 Pipeline CRM</div>
+    <h2 class="section-title reveal">6 étapes. <span class="g">Du contact au closing.</span></h2>
+    <p class="section-sub reveal">Chaque prospect avance dans le pipeline. Tu sais exactement où tu en es.</p>
+    <div class="pipeline-stages reveal-scale stagger">
+      <div class="ps-stage"><div class="ps-icon">📞</div><div class="ps-label">Cold Call</div><div class="ps-arrow">›</div></div>
+      <div class="ps-stage"><div class="ps-icon">🔄</div><div class="ps-label">À Rappeler</div><div class="ps-arrow">›</div></div>
+      <div class="ps-stage"><div class="ps-icon">📅</div><div class="ps-label">RDV à poser</div><div class="ps-arrow">›</div></div>
+      <div class="ps-stage"><div class="ps-icon">✅</div><div class="ps-label">RDV Confirmé</div><div class="ps-arrow">›</div></div>
+      <div class="ps-stage"><div class="ps-icon">💰</div><div class="ps-label">CLOSÉ !</div></div>
     </div>
-
-    <div style="margin-top: 2rem;">
-      <div class="crm-list fade-up">
-        <div class="crm-item">
-          <div class="crm-item-icon ci-violet">📝</div>
-          <div class="crm-item-text">
-            <h4>Notes instantanées à chaque étape</h4>
-            <p>Ajoute une note lors de chaque déplacement de stage. Date, heure, contexte — tout est gardé.</p>
-          </div>
-        </div>
-        <div class="crm-item">
-          <div class="crm-item-icon ci-amber">📞</div>
-          <div class="crm-item-text">
-            <h4>Timeline des contacts</h4>
-            <p>Chaque appel, SMS ou email est loggué avec résultat (répondu, messagerie, pas répondu, positif/négatif).</p>
-          </div>
-        </div>
-        <div class="crm-item">
-          <div class="crm-item-icon ci-green">💰</div>
-          <div class="crm-item-text">
-            <h4>Détail du deal à la signature</h4>
-            <p>Type de prestation, date de signature, facturation mensuelle ou one-shot — enregistré automatiquement.</p>
-          </div>
-        </div>
-        <div class="crm-item">
-          <div class="crm-item-icon ci-pink">❌</div>
-          <div class="crm-item-text">
-            <h4>Analyse des objections</h4>
-            <p>Chaque refus = une objection enregistrée. Rapport visuel : "30% trop cher, 25% déjà prestataire..." Travaille tes scripts.</p>
-          </div>
-        </div>
+    <div style="margin-top:2rem">
+      <div class="crm-list reveal stagger">
+        <div class="crm-item"><div class="crm-item-icon">📝</div><div class="crm-item-text"><h4>Notes instantanées à chaque étape</h4><p>Ajoute une note lors de chaque déplacement. Date, heure, contexte — tout est gardé.</p></div></div>
+        <div class="crm-item"><div class="crm-item-icon">📞</div><div class="crm-item-text"><h4>Timeline des contacts</h4><p>Chaque appel, SMS ou email loggué avec résultat.</p></div></div>
+        <div class="crm-item"><div class="crm-item-icon">💰</div><div class="crm-item-text"><h4>Détail du deal à la signature</h4><p>Type de prestation, date, facturation mensuelle ou one-shot.</p></div></div>
+        <div class="crm-item"><div class="crm-item-icon">❌</div><div class="crm-item-text"><h4>Analyse des objections</h4><p>Chaque refus = une objection. Rapport visuel pour optimiser tes scripts.</p></div></div>
       </div>
     </div>
   </div>
@@ -737,125 +362,60 @@
 
 <!-- ── SEARCH MODES ── -->
 <section>
+  <div class="float-el float-circle anim-float-slow" style="width:55px;height:55px;bottom:10%;right:5%"></div>
+  <div class="shape shape-orange" style="width:300px;height:300px;top:-80px;left:-100px"></div>
   <div class="section-inner">
-    <div class="section-badge fade-up">🔍 Modes de recherche</div>
-    <h2 class="section-title fade-up">6 façons de <span class="g">trouver tes clients</span></h2>
-    <p class="section-sub fade-up">Chaque mode cible un type de prospect différent. Combine-les pour maximiser tes résultats.</p>
-
-    <div class="modes-grid fade-up">
-      <div class="mode-card">
-        <div class="mode-card-icon">🌐</div>
-        <div class="mode-card-title">Sans site web</div>
-        <div class="mode-card-desc">Filtre uniquement les business qui n'ont aucun site internet. Ton pitch de vente le plus facile.</div>
-        <span class="mode-tag tag-blue">Score +3 🔥</span>
-      </div>
-      <div class="mode-card">
-        <div class="mode-card-icon">📱</div>
-        <div class="mode-card-title">Sans réseaux sociaux</div>
-        <div class="mode-card-desc">Pas de Facebook, pas d'Instagram, pas de TikTok. Clients idéaux pour gestion de réseaux.</div>
-        <span class="mode-tag tag-violet">Score +3 🔥</span>
-      </div>
-      <div class="mode-card">
-        <div class="mode-card-icon">💎</div>
-        <div class="mode-card-title">Les deux (site + réseaux)</div>
-        <div class="mode-card-desc">Ni site, ni réseaux. Le prospect le plus chaud du marché. Double crédit, double résultat.</div>
-        <span class="mode-tag tag-amber">🔥🔥 Brûlant</span>
-      </div>
-      <div class="mode-card">
-        <div class="mode-card-icon">⭐</div>
-        <div class="mode-card-title">Moins de 10 avis</div>
-        <div class="mode-card-desc">Business peu visible sur Google. Un bon site + des avis = leur transformation complète.</div>
-        <span class="mode-tag tag-green">Peu visibles</span>
-      </div>
-      <div class="mode-card">
-        <div class="mode-card-icon">🤖</div>
-        <div class="mode-card-title">Gérants IA</div>
-        <div class="mode-card-desc">Claude IA identifie le nom du gérant dans la raison sociale. Contacte directement la bonne personne.</div>
-        <span class="mode-tag tag-violet">IA — Claude</span>
-      </div>
-      <div class="mode-card">
-        <div class="mode-card-icon">🆕</div>
-        <div class="mode-card-title">Business récents</div>
-        <div class="mode-card-desc">Moins de 5 avis = ouvert depuis moins d'un an. Premier à les contacter, premier à les closer.</div>
-        <span class="mode-tag tag-pink">< 1 an</span>
-      </div>
+    <div class="section-badge reveal">🔍 Modes de recherche</div>
+    <h2 class="section-title reveal">6 façons de <span class="g">trouver tes clients</span></h2>
+    <p class="section-sub reveal">Chaque mode cible un type de prospect différent.</p>
+    <div class="modes-grid reveal stagger">
+      <div class="mode-card"><div class="mode-card-icon">🌐</div><div class="mode-card-title">Sans site web</div><div class="mode-card-desc">Business sans site internet. Pitch de vente le plus facile.</div><span class="mode-tag tag-blue">Score +3 🔥</span></div>
+      <div class="mode-card"><div class="mode-card-icon">📱</div><div class="mode-card-title">Sans réseaux sociaux</div><div class="mode-card-desc">Pas de Facebook, Instagram, TikTok. Clients idéaux.</div><span class="mode-tag tag-violet">Score +3 🔥</span></div>
+      <div class="mode-card"><div class="mode-card-icon">💎</div><div class="mode-card-title">Les deux (site + réseaux)</div><div class="mode-card-desc">Ni site, ni réseaux. Le prospect le plus chaud.</div><span class="mode-tag tag-orange">🔥🔥 Brûlant</span></div>
+      <div class="mode-card"><div class="mode-card-icon">⭐</div><div class="mode-card-title">Moins de 10 avis</div><div class="mode-card-desc">Business peu visible. Un bon site + avis = transformation.</div><span class="mode-tag tag-green">Peu visibles</span></div>
+      <div class="mode-card"><div class="mode-card-icon">🤖</div><div class="mode-card-title">Gérants IA</div><div class="mode-card-desc">Claude IA identifie le gérant. Contact direct.</div><span class="mode-tag tag-violet">IA — Claude</span></div>
+      <div class="mode-card"><div class="mode-card-icon">🆕</div><div class="mode-card-title">Business récents</div><div class="mode-card-desc">Moins de 5 avis = ouvert récemment. Premier à closer.</div><span class="mode-tag tag-pink">< 1 an</span></div>
     </div>
   </div>
 </section>
 
 <!-- ── HOW IT WORKS ── -->
-<section id="how" style="background: rgba(124,58,237,.03); border-top: 1px solid var(--border);">
+<section id="how" class="section-alt">
+  <div class="float-el float-dot anim-float" style="width:10px;height:10px;top:20%;right:8%"></div>
+  <div class="float-el float-square anim-float-slow" style="width:30px;height:30px;bottom:15%;left:6%"></div>
   <div class="section-inner">
-    <div class="section-badge fade-up">⚡ Fonctionnement</div>
-    <h2 class="section-title fade-up">Trois étapes.<br><span class="g">C'est tout.</span></h2>
-    <p class="section-sub fade-up">Pas de formation, pas de setup. Tu cherches, tu trouves, tu closes.</p>
-
-    <div class="steps-row">
-      <div class="step-card fade-up">
-        <div class="step-num">01</div>
-        <h3>Scanne ta niche</h3>
-        <p>Choisis une niche (plombier, boulanger, coiffeur...), un pays et un mode. L'outil scanne Google Places en temps réel et te sort les prospects triés du 🔥🔥 au ❄️.</p>
-      </div>
-      <div class="step-card fade-up fade-up-d1">
-        <div class="step-num">02</div>
-        <h3>Contacte & log</h3>
-        <p>Appelle directement depuis l'app. Log chaque tentative, génère un pitch IA adapté (appel / email / SMS / DM). Avance dans le pipeline stage par stage.</p>
-      </div>
-      <div class="step-card fade-up fade-up-d2">
-        <div class="step-num">03</div>
-        <h3>Close & analyse</h3>
-        <p>Confirme le deal avec type de prestation et facturation. Analyse ton taux de closing, tes objections les plus fréquentes, et optimise ton approche.</p>
-      </div>
+    <div class="section-badge reveal">⚡ Fonctionnement</div>
+    <h2 class="section-title reveal">Trois étapes.<br><span class="g">C'est tout.</span></h2>
+    <p class="section-sub reveal">Pas de formation, pas de setup. Tu cherches, tu trouves, tu closes.</p>
+    <div class="steps-row reveal stagger">
+      <div class="step-card"><div class="step-num">01</div><h3>Scanne ta niche</h3><p>Choisis une niche, un pays et un mode. L'outil scanne Google Places et sort les prospects triés du 🔥🔥 au ❄️.</p></div>
+      <div class="step-card"><div class="step-num">02</div><h3>Contacte & log</h3><p>Appelle depuis l'app. Log chaque tentative, génère un pitch IA. Avance dans le pipeline.</p></div>
+      <div class="step-card"><div class="step-num">03</div><h3>Close & analyse</h3><p>Confirme le deal. Analyse ton taux de closing et optimise ton approche.</p></div>
     </div>
   </div>
 </section>
 
 <!-- ── PRICING ── -->
 <section id="pricing">
+  <div class="shape shape-blue" style="width:400px;height:400px;top:-120px;right:-120px"></div>
   <div class="section-inner">
-    <div class="section-badge fade-up">💳 Tarifs</div>
-    <h2 class="section-title fade-up">Simple et <span class="g">transparent</span></h2>
-    <p class="section-sub fade-up">1 crédit = 1 prospect trouvé. Commence avec 5 crédits offerts.</p>
-
-    <div class="pricing-grid">
-      <div class="price-card fade-up">
-        <div class="price-plan">Gratuit</div>
-        <div class="price-amount">0<small> EUR</small></div>
-        <div class="price-desc">5 crédits à l'inscription</div>
-        <ul class="price-features">
-          <li><span class="price-check">✦</span> Recherche Google Places</li>
-          <li><span class="price-check">✦</span> Pipeline CRM 6 étapes</li>
-          <li><span class="price-check">✦</span> Score de chaleur IA</li>
-          <li><span class="price-check">✦</span> 5 crédits offerts</li>
-        </ul>
+    <div class="section-badge reveal">💳 Tarifs</div>
+    <h2 class="section-title reveal">Simple et <span class="g">transparent</span></h2>
+    <p class="section-sub reveal">1 crédit = 1 prospect trouvé. Commence avec 5 crédits offerts.</p>
+    <div class="pricing-grid reveal stagger">
+      <div class="price-card">
+        <div class="price-plan">Gratuit</div><div class="price-amount">0<small> EUR</small></div><div class="price-desc">5 crédits à l'inscription</div>
+        <ul class="price-features"><li><span class="price-check">✦</span>Recherche Google Places</li><li><span class="price-check">✦</span>Pipeline CRM 6 étapes</li><li><span class="price-check">✦</span>Score de chaleur IA</li><li><span class="price-check">✦</span>5 crédits offerts</li></ul>
         <a class="price-btn price-btn-outline" href="/login?tab=register">Commencer gratuitement</a>
       </div>
-      <div class="price-card featured fade-up fade-up-d1">
-        <div class="price-featured-tag">⭐ Populaire</div>
-        <div class="price-plan g">Pro</div>
-        <div class="price-amount">29<small> EUR/mois</small></div>
-        <div class="price-desc">100 crédits renouvelés chaque mois</div>
-        <ul class="price-features">
-          <li><span class="price-check">✦</span> Tout du plan Gratuit</li>
-          <li><span class="price-check">✦</span> Pitch IA — 7 types</li>
-          <li><span class="price-check">✦</span> Extraction gérants IA</li>
-          <li><span class="price-check">✦</span> Historique des contacts</li>
-          <li><span class="price-check">✦</span> Deal tracker complet</li>
-          <li><span class="price-check">✦</span> 100 crédits / mois</li>
-        </ul>
+      <div class="price-card featured">
+        <div class="price-featured-tag">⭐ Populaire</div><div class="price-plan g">Pro</div><div class="price-amount">29<small> EUR/mois</small></div><div class="price-desc">100 crédits / mois</div>
+        <ul class="price-features"><li><span class="price-check">✦</span>Tout du plan Gratuit</li><li><span class="price-check">✦</span>Pitch IA — 7 types</li><li><span class="price-check">✦</span>Extraction gérants IA</li><li><span class="price-check">✦</span>Historique contacts</li><li><span class="price-check">✦</span>Deal tracker</li><li><span class="price-check">✦</span>100 crédits / mois</li></ul>
         <a class="price-btn price-btn-filled" href="/login?tab=register">Choisir Pro</a>
       </div>
-      <div class="price-card fade-up fade-up-d2">
-        <div class="price-plan">Légende</div>
-        <div class="price-amount">79<small> EUR/mois</small></div>
-        <div class="price-desc">500 crédits — pour les machines</div>
-        <ul class="price-features">
-          <li><span class="price-check">✦</span> Tout du plan Pro</li>
-          <li><span class="price-check">✦</span> Support prioritaire 24h</li>
-          <li><span class="price-check">✦</span> Accès anticipé aux features</li>
-          <li><span class="price-check">✦</span> Recherche multi-ville</li>
-          <li><span class="price-check">✦</span> 500 crédits / mois</li>
-        </ul>
+      <div class="price-card">
+        <div class="price-plan">Légende</div><div class="price-amount">79<small> EUR/mois</small></div><div class="price-desc">500 crédits / mois</div>
+        <ul class="price-features"><li><span class="price-check">✦</span>Tout du plan Pro</li><li><span class="price-check">✦</span>Support prioritaire 24h</li><li><span class="price-check">✦</span>Accès anticipé features</li><li><span class="price-check">✦</span>Recherche multi-ville</li><li><span class="price-check">✦</span>500 crédits / mois</li></ul>
         <a class="price-btn price-btn-outline" href="/login?tab=register">Choisir Légende</a>
       </div>
     </div>
@@ -865,104 +425,83 @@
 <!-- ── CTA ── -->
 <section class="cta-section">
   <div class="section-inner">
-    <div class="cta-inner fade-up">
+    <div class="cta-inner reveal-scale">
       <h2>Prêt à remplir ton pipeline ? 🚀</h2>
       <p>5 crédits offerts à l'inscription. Aucune carte bancaire requise.</p>
-      <a class="btn-hero btn-hero-primary" href="/login?tab=register">Créer mon compte gratuitement</a>
+      <a class="btn-hero btn-primary" href="/login?tab=register">Créer mon compte gratuitement</a>
     </div>
   </div>
 </section>
 
-<!-- ── FOOTER ── -->
 <footer>
-  <div class="footer-logo">
-    <span class="footer-logo-icon">🎯</span>
-    <span class="footer-logo-text">ProspectHunter</span>
-  </div>
+  <div class="footer-logo"><span class="footer-logo-icon">🎯</span><span class="footer-logo-text">ProspectHunter</span></div>
   <p>&copy; 2026 ProspectHunter — Trouve. Contacte. Close.</p>
 </footer>
 
 <script>
-// Nav scroll
-const nav = document.getElementById('nav');
-window.addEventListener('scroll', () => nav.classList.toggle('scrolled', scrollY > 30), { passive: true });
+// ── Nav scroll ──
+const nav=document.getElementById('nav');
+window.addEventListener('scroll',()=>nav.classList.toggle('scrolled',scrollY>30),{passive:true});
 
-// Redirect if logged in
-if (localStorage.getItem('ph_token')) {
-  document.querySelectorAll('.nav-cta').forEach(e => { e.href = '/app'; e.textContent = 'Ouvrir l\'app 🎯'; });
-  document.querySelectorAll('.nav-login').forEach(e => e.style.display = 'none');
+// ── Redirect if logged in ──
+if(localStorage.getItem('ph_token')){
+  document.querySelectorAll('.nav-cta').forEach(e=>{e.href='/app';e.textContent="Ouvrir l'app 🎯"});
+  document.querySelectorAll('.nav-login').forEach(e=>e.style.display='none');
 }
 
-// Scroll fade-up
-const obs = new IntersectionObserver(entries => {
-  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
-}, { threshold: 0.1 });
-document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+// ── Scroll reveal (multiple types) ──
+const revealObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');revealObs.unobserve(e.target)}})
+},{threshold:.08,rootMargin:'0px 0px -50px 0px'});
+document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.reveal-scale,.stagger').forEach(el=>revealObs.observe(el));
 
-// Smooth scroll
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-  a.addEventListener('click', e => {
+// ── Animated counters ──
+const counterObs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(!e.isIntersecting)return;
+    const el=e.target;
+    const target=parseInt(el.dataset.target);
+    if(isNaN(target))return;
+    let current=0;
+    const step=Math.max(1,Math.floor(target/30));
+    const interval=setInterval(()=>{
+      current+=step;
+      if(current>=target){current=target;clearInterval(interval)}
+      el.textContent=current;
+    },40);
+    counterObs.unobserve(el);
+  })
+},{threshold:.5});
+document.querySelectorAll('.stat-num[data-target]').forEach(el=>counterObs.observe(el));
+
+// ── Smooth scroll ──
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
     e.preventDefault();
-    const t = document.querySelector(a.getAttribute('href'));
-    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  });
+    const t=document.querySelector(a.getAttribute('href'));
+    if(t)t.scrollIntoView({behavior:'smooth',block:'start'})
+  })
 });
 
-// ── PARTICLES CANVAS ──
-(function() {
-  const canvas = document.getElementById('bg');
-  const ctx = canvas.getContext('2d');
-  let W, H;
-  const particles = [];
-  const COLORS = [[124,58,237], [14,165,233], [79,70,229], [245,158,11]];
-
-  function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
-  resize(); addEventListener('resize', resize);
-
-  class P {
-    constructor() { this.reset(); }
-    reset() {
-      this.x = Math.random() * W;
-      this.y = Math.random() * H;
-      this.r = Math.random() * 1.8 + .3;
-      this.vx = (Math.random() - .5) * .25;
-      this.vy = (Math.random() - .5) * .25;
-      this.c = COLORS[Math.floor(Math.random() * COLORS.length)];
-      this.a = .15 + Math.random() * .4;
-    }
-    update() {
-      this.x += this.vx; this.y += this.vy;
-      if (this.x < 0) this.x = W; if (this.x > W) this.x = 0;
-      if (this.y < 0) this.y = H; if (this.y > H) this.y = 0;
-    }
-    draw() {
-      ctx.beginPath(); ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(${this.c},${this.a})`; ctx.fill();
-    }
+// ── Parallax floating elements ──
+let ticking=false;
+window.addEventListener('scroll',()=>{
+  if(!ticking){
+    requestAnimationFrame(()=>{
+      const y=window.scrollY;
+      document.querySelectorAll('.float-el').forEach((el,i)=>{
+        const speed=(i%2===0)?-.02:.015;
+        el.style.transform=`translateY(${y*speed}px) ${el.classList.contains('float-square')?'rotate('+(45+y*.02)+'deg)':''}`;
+      });
+      // Move shapes slowly
+      document.querySelectorAll('.shape').forEach((el,i)=>{
+        el.style.transform=`translateY(${y*(i%2===0?-.01:.008)}px)`;
+      });
+      ticking=false;
+    });
+    ticking=true;
   }
-
-  for (let i = 0; i < 100; i++) particles.push(new P());
-
-  (function loop() {
-    ctx.clearRect(0, 0, W, H);
-    for (let i = 0; i < particles.length; i++) {
-      particles[i].update(); particles[i].draw();
-      for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const d = Math.sqrt(dx*dx + dy*dy);
-        if (d < 120) {
-          ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = `rgba(124,58,237,${.06 * (1 - d/120)})`;
-          ctx.lineWidth = .5; ctx.stroke();
-        }
-      }
-    }
-    requestAnimationFrame(loop);
-  })();
-})();
+},{passive:true});
 </script>
 </body>
 </html>

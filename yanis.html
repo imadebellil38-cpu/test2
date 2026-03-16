@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YANIS NO DENWA</title>
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root {
+    --bg: #0a0a12;
+    --surface: #12121f;
+    --card: #16162a;
+    --red: #ff2d55;
+    --orange: #ff6b35;
+    --yellow: #ffd700;
+    --cyan: #00e5ff;
+    --pink: #ff69b4;
+    --purple: #9d4edd;
+    --text: #f0f0f0;
+  }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  #mangaBg { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  .speed-lines {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background: repeating-conic-gradient(from 0deg at 50% 50%, transparent 0deg, transparent 3.5deg, rgba(255,255,255,0.008) 3.5deg, rgba(255,255,255,0.008) 4deg);
+    opacity: 0.6;
+  }
+  .manga-float {
+    position: fixed; z-index: 2; pointer-events: none;
+    animation: floatManga 8s ease-in-out infinite;
+    opacity: 0.06;
+  }
+  .manga-float:nth-child(2){animation-delay:-2s;animation-duration:10s}
+  .manga-float:nth-child(3){animation-delay:-4s;animation-duration:12s}
+  .manga-float:nth-child(4){animation-delay:-6s;animation-duration:9s}
+  .manga-float:nth-child(5){animation-delay:-1s;animation-duration:11s}
+  .manga-float:nth-child(6){animation-delay:-3s;animation-duration:7s}
+  @keyframes floatManga {
+    0%,100%{transform:translateY(0) rotate(-3deg)}
+    50%{transform:translateY(-30px) rotate(3deg)}
+  }
+  .hero {
+    position: relative; z-index: 10;
+    text-align: center;
+    padding: 60px 20px 40px;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 0%, rgba(255,45,85,.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 20% 80%, rgba(157,78,221,.1) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(0,229,255,.08) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .action-burst {
+    position: absolute; top: 50%; left: 50%;
+    width: 600px; height: 600px;
+    transform: translate(-50%, -50%);
+    pointer-events: none; opacity: 0.08;
+  }
+  .hero-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,45,85,.1);
+    border: 1px solid rgba(255,45,85,.3);
+    padding: 6px 16px; border-radius: 30px;
+    font-size: .75rem; font-weight: 700;
+    color: var(--red); margin-bottom: 20px;
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+  @keyframes pulseGlow {
+    0%,100%{box-shadow:0 0 20px rgba(255,45,85,.1)}
+    50%{box-shadow:0 0 40px rgba(255,45,85,.25)}
+  }
+  .hero h1 {
+    font-family: 'Bangers', cursive;
+    font-size: clamp(2.5rem, 8vw, 5rem);
+    letter-spacing: 3px; line-height: 1;
+    margin-bottom: 8px; position: relative;
+    text-shadow: 3px 3px 0 var(--red), 6px 6px 0 rgba(0,0,0,0.3);
+    animation: titleSlam 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  @keyframes titleSlam {
+    0%{opacity:0;transform:scale(2) rotate(-5deg)}
+    60%{transform:scale(0.95) rotate(1deg)}
+    100%{opacity:1;transform:scale(1) rotate(0)}
+  }
+  .hero h1 .white{color:#fff}
+  .hero h1 .red{color:var(--red)}
+  .hero-sub {
+    font-size: 1rem; color: #888;
+    margin-bottom: 8px;
+    animation: fadeUp .8s .3s both;
+  }
+  .hero-yanis {
+    font-family: 'Bangers', cursive;
+    font-size: 1.4rem; color: var(--yellow);
+    text-shadow: 2px 2px 0 rgba(0,0,0,.5);
+    animation: fadeUp .8s .5s both;
+    margin-bottom: 24px;
+  }
+  @keyframes fadeUp {
+    from{opacity:0;transform:translateY(20px)}
+    to{opacity:1;transform:translateY(0)}
+  }
+  .manga-chars {
+    display: flex; justify-content: center; gap: 20px;
+    margin-bottom: 30px;
+    animation: fadeUp 1s .6s both;
+    perspective: 500px;
+  }
+  .manga-char { width: 120px; height: 160px; transition: transform .3s; }
+  .manga-char:nth-child(1) { animation: narutoRun 0.6s ease-in-out infinite; }
+  @keyframes narutoRun {
+    0%,100%{transform:translateY(0) rotate(0deg)}
+    25%{transform:translateY(-8px) rotate(-2deg) translateX(-3px)}
+    50%{transform:translateY(-2px) rotate(0deg)}
+    75%{transform:translateY(-8px) rotate(2deg) translateX(3px)}
+  }
+  .manga-char:nth-child(2) {
+    animation: gokuCharge 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px rgba(255,215,0,.3));
+  }
+  @keyframes gokuCharge {
+    0%,100%{transform:translateY(0) scale(1);filter:drop-shadow(0 0 8px rgba(255,215,0,.2))}
+    50%{transform:translateY(-6px) scale(1.05);filter:drop-shadow(0 0 25px rgba(255,215,0,.6))}
+  }
+  .manga-char:nth-child(3) { animation: luffyStretch 2.5s ease-in-out infinite; }
+  @keyframes luffyStretch {
+    0%,100%{transform:translateY(0) scaleY(1) scaleX(1)}
+    20%{transform:translateY(-15px) scaleY(1.08) scaleX(0.95)}
+    40%{transform:translateY(0) scaleY(0.95) scaleX(1.05)}
+    60%{transform:translateY(-10px) scaleY(1.04) scaleX(0.97)}
+    80%{transform:translateY(0) scaleY(0.98) scaleX(1.02)}
+  }
+  .manga-char:hover { transform: scale(1.15) rotate(-3deg) !important; filter: drop-shadow(0 0 20px rgba(255,215,0,.5)); }
+
+  .stats-bar {
+    display: flex; justify-content: center; gap: 24px; flex-wrap: wrap;
+    margin-bottom: 30px; animation: fadeUp 1s .7s both;
+  }
+  .stat-item {
+    text-align: center; padding: 12px 20px;
+    background: var(--surface); border: 1px solid #222;
+    border-radius: 14px; min-width: 100px;
+  }
+  .stat-num {
+    font-family: 'Bangers', cursive; font-size: 2rem;
+    color: var(--cyan); text-shadow: 0 0 20px rgba(0,229,255,.3);
+  }
+  .stat-label { font-size: .7rem; color: #666; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+
+  .controls { max-width: 800px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 10; }
+  .search-wrap { position: relative; margin-bottom: 16px; }
+  .search-wrap svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); color: #555; width: 18px; height: 18px; }
+  .search {
+    display: block; width: 100%; padding: 14px 16px 14px 44px;
+    border-radius: 14px; border: 1px solid #222;
+    background: var(--surface); color: #fff; font-size: .9rem; font-weight: 500; transition: .3s;
+  }
+  .search:focus { outline: none; border-color: var(--red); box-shadow: 0 0 30px rgba(255,45,85,.1); }
+  .filters { display: flex; gap: 8px; justify-content: center; margin-bottom: 24px; flex-wrap: wrap; }
+  .filters button {
+    padding: 8px 16px; border-radius: 10px; border: 1px solid #222;
+    background: var(--surface); color: #888; font-size: .78rem; font-weight: 700; cursor: pointer; transition: .3s;
+  }
+  .filters button:hover { color: #fff; border-color: #444; }
+  .filters button.active { color: #fff; border-color: var(--red); background: rgba(255,45,85,.12); box-shadow: 0 0 20px rgba(255,45,85,.1); }
+  .count { text-align: center; margin-bottom: 20px; font-size: .8rem; color: #555; font-weight: 600; }
+  .count span { color: var(--cyan); }
+
+  .list {
+    max-width: 800px; margin: 0 auto; padding: 0 20px 60px;
+    display: flex; flex-direction: column; gap: 10px; position: relative; z-index: 10;
+  }
+  .card {
+    background: var(--card); border: 1px solid #1e1e35; border-radius: 16px;
+    padding: 18px 20px; display: flex; align-items: center; gap: 16px;
+    transition: all .3s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; bottom: 0;
+    width: 3px; background: var(--red); opacity: 0; transition: .3s;
+  }
+  .card:hover {
+    transform: translateX(6px) scale(1.01);
+    border-color: rgba(255,45,85,.3);
+    box-shadow: 0 8px 40px rgba(255,45,85,.1), 0 0 60px rgba(255,45,85,.05);
+  }
+  .card:hover::before { opacity: 1; }
+  .card.hot-card:hover { border-color: rgba(255,45,85,.4); }
+  .card.warm-card:hover { border-color: rgba(255,165,0,.3); box-shadow: 0 8px 40px rgba(255,165,0,.08); }
+  .card.warm-card::before { background: var(--orange); }
+  .card.mild-card:hover { border-color: rgba(0,229,255,.3); box-shadow: 0 8px 40px rgba(0,229,255,.08); }
+  .card.mild-card::before { background: var(--cyan); }
+  .card.cold-card:hover { border-color: rgba(100,160,220,.3); box-shadow: 0 8px 40px rgba(100,160,220,.06); }
+  .card.cold-card::before { background: #5588bb; }
+
+  .card-num {
+    font-family: 'Bangers', cursive; font-size: 1.5rem;
+    color: var(--red); min-width: 36px; text-align: center;
+    text-shadow: 0 0 10px rgba(255,45,85,.3);
+  }
+  .card-info { flex: 1; min-width: 0; }
+  .card-name { font-weight: 800; font-size: .95rem; color: #fff; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-addr { font-size: .75rem; color: #555; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card-meta { display: flex; gap: 8px; margin-top: 5px; align-items: center; flex-wrap: wrap; }
+  .card-stars { color: var(--yellow); font-size: .75rem; }
+  .card-reviews { font-size: .68rem; color: #555; }
+  .card-badge { font-size: .62rem; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: .5px; }
+  .badge-hot { background: rgba(255,45,85,.12); color: var(--red); border: 1px solid rgba(255,45,85,.25); }
+  .badge-warm { background: rgba(255,165,0,.1); color: var(--orange); border: 1px solid rgba(255,165,0,.2); }
+  .badge-mild { background: rgba(0,229,255,.1); color: var(--cyan); border: 1px solid rgba(0,229,255,.2); }
+  .badge-cold { background: rgba(100,160,220,.08); color: #7aaccf; border: 1px solid rgba(100,160,220,.15); }
+  .card-phone {
+    display: flex; align-items: center; gap: 6px;
+    background: linear-gradient(135deg, var(--red), #cc1144);
+    color: #fff; text-decoration: none; padding: 10px 16px;
+    border-radius: 12px; font-weight: 800; font-size: .8rem;
+    white-space: nowrap; transition: .3s;
+    box-shadow: 0 4px 16px rgba(255,45,85,.2);
+  }
+  .card-phone:hover { transform: scale(1.06); box-shadow: 0 6px 28px rgba(255,45,85,.35); }
+  .card-phone svg { width: 16px; height: 16px; }
+
+  .boom {
+    position: fixed; pointer-events: none; z-index: 999;
+    font-family: 'Bangers', cursive; font-size: 3rem;
+    color: var(--yellow); text-shadow: 3px 3px 0 var(--red);
+    opacity: 0; animation: boomPop .6s ease-out forwards;
+  }
+  @keyframes boomPop {
+    0%{opacity:1;transform:scale(0) rotate(-15deg)}
+    50%{opacity:1;transform:scale(1.3) rotate(5deg)}
+    100%{opacity:0;transform:scale(1) rotate(0) translateY(-30px)}
+  }
+  .panel-border { position: fixed; z-index: 3; pointer-events: none; }
+  .panel-border.top { top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, var(--red), transparent); }
+  .panel-border.bottom { bottom: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, var(--cyan), transparent); }
+  .panel-border.left { top: 0; bottom: 0; left: 0; width: 3px; background: linear-gradient(180deg, var(--red), transparent, var(--cyan)); }
+  .panel-border.right { top: 0; bottom: 0; right: 0; width: 3px; background: linear-gradient(180deg, var(--cyan), transparent, var(--red)); }
+  .onomatopoeia {
+    position: fixed; font-family: 'Bangers', cursive; z-index: 2;
+    pointer-events: none; opacity: 0; animation: onomFloat 4s ease-in-out infinite;
+  }
+  @keyframes onomFloat {
+    0%,100%{opacity:0;transform:scale(.8) rotate(-5deg)}
+    15%,85%{opacity:.06}
+    50%{opacity:.1;transform:scale(1.1) rotate(5deg) translateY(-20px)}
+  }
+  @media(max-width:600px) {
+    .card { flex-wrap: wrap; gap: 10px; padding: 14px 16px; }
+    .card-phone { width: 100%; justify-content: center; }
+    .card-num { font-size: 1.2rem; min-width: 28px; }
+    .manga-chars { gap: 10px; }
+    .manga-char { width: 70px; height: 100px; }
+    .stats-bar { gap: 12px; }
+    .stat-item { padding: 10px 14px; min-width: 80px; }
+    .stat-num { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="panel-border top"></div>
+<div class="panel-border bottom"></div>
+<div class="panel-border left"></div>
+<div class="panel-border right"></div>
+
+<div class="manga-float" style="top:10%;left:5%">
+  <svg viewBox="0 0 100 100" width="80" fill="none"><path d="M50 5 L61 35 H95 L67 55 L78 85 L50 65 L22 85 L33 55 L5 35 H39Z" fill="currentColor"/></svg>
+</div>
+<div class="manga-float" style="top:30%;right:8%;color:#ff2d55">
+  <svg viewBox="0 0 80 80" width="60"><circle cx="40" cy="40" r="35" stroke="currentColor" stroke-width="3" fill="none" stroke-dasharray="8 6"/></svg>
+</div>
+<div class="manga-float" style="top:60%;left:3%">
+  <svg viewBox="0 0 100 60" width="70"><polygon points="10,55 50,5 90,55" stroke="currentColor" stroke-width="2.5" fill="none"/></svg>
+</div>
+<div class="manga-float" style="top:75%;right:5%;color:#9d4edd">
+  <svg viewBox="0 0 60 60" width="50"><rect x="5" y="5" width="50" height="50" rx="8" stroke="currentColor" stroke-width="2.5" fill="none" transform="rotate(15 30 30)"/></svg>
+</div>
+<div class="manga-float" style="top:45%;left:8%;color:#ffd700">
+  <svg viewBox="0 0 60 60" width="40"><path d="M30 5 L35 22 H52 L38 33 L43 50 L30 39 L17 50 L22 33 L8 22 H25Z" fill="currentColor"/></svg>
+</div>
+<div class="manga-float" style="top:15%;right:15%;color:#00e5ff">
+  <svg viewBox="0 0 60 60" width="55"><path d="M30 5 Q55 30 30 55 Q5 30 30 5Z" stroke="currentColor" stroke-width="2" fill="none"/></svg>
+</div>
+
+<div class="onomatopoeia" style="top:20%;left:12%;font-size:3rem;color:#ff6b00;animation-delay:0s">DEMPSEY ROLL!</div>
+<div class="onomatopoeia" style="top:50%;right:8%;font-size:2.5rem;color:#ffd700;animation-delay:-2s">K.O.!</div>
+<div class="onomatopoeia" style="top:70%;left:6%;font-size:2rem;color:#cc0000;animation-delay:-1s">UPPERCUT!</div>
+<div class="onomatopoeia" style="top:35%;right:6%;font-size:2.8rem;color:#1e90ff;animation-delay:-3s">SMASH!</div>
+<div class="onomatopoeia" style="top:85%;left:20%;font-size:2.2rem;color:#00cc88;animation-delay:-1.5s">CHAMPION!</div>
+<div class="onomatopoeia" style="top:12%;right:20%;font-size:2rem;color:#9d4edd;animation-delay:-0.8s">GAZELLE PUNCH!</div>
+
+<div class="speed-lines"></div>
+<canvas id="mangaBg"></canvas>
+
+<section class="hero">
+  <svg class="action-burst" viewBox="0 0 600 600" fill="none">
+    <line x1="300" y1="300" x2="300" y2="0" stroke="white" stroke-width="1" opacity=".15"/>
+    <line x1="300" y1="300" x2="450" y2="40" stroke="white" stroke-width="1" opacity=".12"/>
+    <line x1="300" y1="300" x2="560" y2="150" stroke="white" stroke-width="1" opacity=".1"/>
+    <line x1="300" y1="300" x2="600" y2="300" stroke="white" stroke-width="1" opacity=".12"/>
+    <line x1="300" y1="300" x2="560" y2="450" stroke="white" stroke-width="1" opacity=".1"/>
+    <line x1="300" y1="300" x2="450" y2="560" stroke="white" stroke-width="1" opacity=".12"/>
+    <line x1="300" y1="300" x2="300" y2="600" stroke="white" stroke-width="1" opacity=".15"/>
+    <line x1="300" y1="300" x2="150" y2="560" stroke="white" stroke-width="1" opacity=".12"/>
+    <line x1="300" y1="300" x2="40" y2="450" stroke="white" stroke-width="1" opacity=".1"/>
+    <line x1="300" y1="300" x2="0" y2="300" stroke="white" stroke-width="1" opacity=".12"/>
+    <line x1="300" y1="300" x2="40" y2="150" stroke="white" stroke-width="1" opacity=".1"/>
+    <line x1="300" y1="300" x2="150" y2="40" stroke="white" stroke-width="1" opacity=".12"/>
+  </svg>
+
+  <div class="hero-badge">&#11088; YANIS EDITION</div>
+  <h1><span class="white">YANIS</span> <span class="red">NO DENWA</span></h1>
+  <p class="hero-sub">Carnet de prospection - Boutiques manga</p>
+  <p class="hero-yanis">62 prospects. France + Suisse.</p>
+  <p style="color:#00e5ff;font-size:.85rem;max-width:500px;margin:0 auto 20px;animation:fadeUp .8s .7s both;line-height:1.6">
+    &#127464;&#127469; <strong style="color:#ffd700">Suisse ajout&#233;e</strong> &#127464;&#127469;<br>
+    <span style="color:#aaa">9 nouvelles boutiques en Suisse. Bonne prospection Yanis, on compte sur toi !</span>
+  </p>
+
+  <div class="manga-chars">
+    <!-- IPPO - Stance de boxe, Dempsey Roll -->
+    <svg class="manga-char" viewBox="0 0 120 170" fill="none">
+      <!-- Body - torse nu musclé -->
+      <path d="M40 68 Q38 62 45 58 L75 58 Q82 62 80 68 L82 120 Q82 124 76 124 L44 124 Q38 124 38 120Z" fill="#e8b88a"/>
+      <!-- Abdos -->
+      <path d="M52 75 L52 115" stroke="#d4956c" stroke-width="0.8" opacity=".4"/>
+      <path d="M68 75 L68 115" stroke="#d4956c" stroke-width="0.8" opacity=".4"/>
+      <path d="M48 82 L72 82" stroke="#d4956c" stroke-width="0.6" opacity=".3"/>
+      <path d="M48 92 L72 92" stroke="#d4956c" stroke-width="0.6" opacity=".3"/>
+      <path d="M48 102 L72 102" stroke="#d4956c" stroke-width="0.6" opacity=".3"/>
+      <!-- Short de boxe rouge -->
+      <path d="M36 120 L84 120 L86 150 Q86 154 80 154 L40 154 Q34 154 34 150Z" fill="#cc0000"/>
+      <path d="M60 120 L60 154" stroke="#fff" stroke-width="1.5" opacity=".3"/>
+      <!-- Ceinture -->
+      <rect x="36" y="118" width="48" height="6" rx="2" fill="#e5c100"/>
+      <!-- Head -->
+      <circle cx="60" cy="38" r="22" fill="#e8b88a"/>
+      <!-- Cheveux noirs courts hérissés (style Ippo) -->
+      <path d="M38 32 L35 18 L44 28 L42 14 L52 26 L50 12 L58 24 L60 10 L62 24 L68 12 L70 26 L76 14 L78 28 L82 18 L82 32" fill="#1a1a2e"/>
+      <path d="M38 32 Q50 38 60 34 Q70 38 82 32 Q80 24 60 20 Q40 24 38 32Z" fill="#1a1a2e"/>
+      <!-- Yeux déterminés -->
+      <ellipse cx="50" cy="38" rx="5" ry="5.5" fill="#fff"/>
+      <ellipse cx="70" cy="38" rx="5" ry="5.5" fill="#fff"/>
+      <circle cx="51" cy="37" r="3.5" fill="#3a2010"/>
+      <circle cx="71" cy="37" r="3.5" fill="#3a2010"/>
+      <circle cx="52" cy="36" r="1.5" fill="#fff"/>
+      <circle cx="72" cy="36" r="1.5" fill="#fff"/>
+      <!-- Sourcils épais -->
+      <path d="M44 31 L56 32" stroke="#111" stroke-width="3" stroke-linecap="round"/>
+      <path d="M64 32 L76 31" stroke="#111" stroke-width="3" stroke-linecap="round"/>
+      <!-- Sourire confiant -->
+      <path d="M52 47 Q60 54 68 47" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Bras gauche - garde haute, gant de boxe rouge -->
+      <path d="M40 65 Q25 58 18 48" stroke="#e8b88a" stroke-width="12" fill="none" stroke-linecap="round"/>
+      <circle cx="16" cy="46" r="10" fill="#cc0000"/>
+      <circle cx="16" cy="46" r="10" stroke="#990000" stroke-width="1.5" fill="none"/>
+      <path d="M10 42 Q16 38 22 42" stroke="#990000" stroke-width="1" fill="none"/>
+      <!-- Bras droit - uppercut position -->
+      <path d="M80 65 Q95 55 100 42" stroke="#e8b88a" stroke-width="12" fill="none" stroke-linecap="round"/>
+      <circle cx="102" cy="40" r="10" fill="#cc0000"/>
+      <circle cx="102" cy="40" r="10" stroke="#990000" stroke-width="1.5" fill="none"/>
+      <path d="M96 36 Q102 32 108 36" stroke="#990000" stroke-width="1" fill="none"/>
+      <!-- Impact lines autour du poing droit -->
+      <line x1="112" y1="35" x2="118" y2="30" stroke="#ffd700" stroke-width="2" stroke-linecap="round"/>
+      <line x1="114" y1="42" x2="120" y2="42" stroke="#ffd700" stroke-width="2" stroke-linecap="round"/>
+      <line x1="112" y1="48" x2="118" y2="53" stroke="#ffd700" stroke-width="2" stroke-linecap="round"/>
+      <!-- Jambes -->
+      <rect x="42" y="152" width="13" height="12" rx="4" fill="#e8b88a"/>
+      <rect x="65" y="152" width="13" height="12" rx="4" fill="#e8b88a"/>
+      <!-- Chaussures de boxe -->
+      <rect x="40" y="160" width="16" height="8" rx="3" fill="#222"/>
+      <rect x="64" y="160" width="16" height="8" rx="3" fill="#222"/>
+    </svg>
+
+    <!-- IPPO CENTRE - Dempsey Roll en action -->
+    <svg class="manga-char" viewBox="0 0 140 180" fill="none" style="width:150px;height:180px">
+      <!-- Aura de puissance -->
+      <ellipse cx="70" cy="90" rx="55" ry="70" fill="none" stroke="#ff2d55" stroke-width="1.5" opacity=".15"/>
+      <ellipse cx="70" cy="90" rx="48" ry="62" fill="none" stroke="#ffd700" stroke-width="1" opacity=".1"/>
+      <!-- Body - penché en avant, Dempsey Roll -->
+      <path d="M50 78 Q48 72 55 68 L85 68 Q92 72 90 78 L92 125 Q92 130 86 130 L54 130 Q48 130 48 125Z" fill="#e8b88a"/>
+      <!-- Abdos marqués -->
+      <path d="M62 82 L62 122" stroke="#d4956c" stroke-width="0.8" opacity=".5"/>
+      <path d="M78 82 L78 122" stroke="#d4956c" stroke-width="0.8" opacity=".5"/>
+      <path d="M58 90 L82 90" stroke="#d4956c" stroke-width="0.6" opacity=".3"/>
+      <path d="M58 100 L82 100" stroke="#d4956c" stroke-width="0.6" opacity=".3"/>
+      <path d="M58 110 L82 110" stroke="#d4956c" stroke-width="0.6" opacity=".3"/>
+      <!-- Short blanc avec bande rouge -->
+      <path d="M46 125 L94 125 L96 158 Q96 162 90 162 L50 162 Q44 162 44 158Z" fill="#fff"/>
+      <rect x="46" y="125" width="48" height="4" fill="#cc0000"/>
+      <!-- Ceinture de champion -->
+      <rect x="46" y="122" width="48" height="7" rx="2" fill="#ffd700" stroke="#cc8800" stroke-width="1"/>
+      <text x="70" y="128" text-anchor="middle" font-size="5" font-weight="900" fill="#8B4513">CHAMPION</text>
+      <!-- Head -->
+      <circle cx="70" cy="48" r="24" fill="#e8b88a"/>
+      <!-- Cheveux plus détaillés -->
+      <path d="M46 42 L40 22 L52 36 L48 16 L58 32 L54 10 L64 28 L62 6 L70 24 L72 4 L76 28 L82 10 L84 32 L88 16 L90 36 L95 22 L94 42" fill="#1a1a2e"/>
+      <path d="M46 42 Q58 48 70 44 Q82 48 94 42 Q92 32 70 28 Q48 32 46 42Z" fill="#1a1a2e"/>
+      <!-- Bandage sourcil -->
+      <rect x="78" y="28" width="12" height="4" rx="1" fill="#fff" transform="rotate(-10 84 30)"/>
+      <!-- Yeux intenses (mode combat) -->
+      <ellipse cx="58" cy="48" rx="6" ry="6.5" fill="#fff"/>
+      <ellipse cx="82" cy="48" rx="6" ry="6.5" fill="#fff"/>
+      <circle cx="59" cy="47" r="4.5" fill="#3a2010"/>
+      <circle cx="83" cy="47" r="4.5" fill="#3a2010"/>
+      <circle cx="57" cy="47" r="2" fill="#1a0a00"/>
+      <circle cx="81" cy="47" r="2" fill="#1a0a00"/>
+      <circle cx="61" cy="45" r="2" fill="#fff"/>
+      <circle cx="85" cy="45" r="2" fill="#fff"/>
+      <!-- Sourcils rage mode -->
+      <path d="M50 40 L64 42" stroke="#111" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M76 42 L90 40" stroke="#111" stroke-width="3.5" stroke-linecap="round"/>
+      <!-- Bouche cri de guerre -->
+      <path d="M58 58 Q70 68 82 58" stroke="#333" stroke-width="2.5" fill="#fff"/>
+      <!-- Bras gauche - crochet -->
+      <path d="M50 75 Q30 65 15 50 Q8 42 5 48" stroke="#e8b88a" stroke-width="14" fill="none" stroke-linecap="round"/>
+      <circle cx="3" cy="50" r="12" fill="#cc0000"/>
+      <circle cx="3" cy="50" r="12" stroke="#990000" stroke-width="2" fill="none"/>
+      <!-- Bras droit - uppercut dévastateur -->
+      <path d="M90 75 Q110 60 118 40 Q122 30 125 35" stroke="#e8b88a" stroke-width="14" fill="none" stroke-linecap="round"/>
+      <circle cx="127" cy="33" r="12" fill="#cc0000"/>
+      <circle cx="127" cy="33" r="12" stroke="#990000" stroke-width="2" fill="none"/>
+      <!-- IMPACT MASSIF -->
+      <line x1="132" y1="20" x2="138" y2="12" stroke="#ffd700" stroke-width="3" stroke-linecap="round"/>
+      <line x1="136" y1="28" x2="140" y2="26" stroke="#ffd700" stroke-width="3" stroke-linecap="round"/>
+      <line x1="136" y1="38" x2="140" y2="42" stroke="#ff2d55" stroke-width="3" stroke-linecap="round"/>
+      <line x1="132" y1="46" x2="138" y2="52" stroke="#ff2d55" stroke-width="2" stroke-linecap="round"/>
+      <!-- Speed lines -->
+      <line x1="0" y1="30" x2="20" y2="35" stroke="#ff2d55" stroke-width="1" opacity=".3"/>
+      <line x1="0" y1="50" x2="18" y2="48" stroke="#ff2d55" stroke-width="1" opacity=".3"/>
+      <line x1="0" y1="70" x2="22" y2="65" stroke="#ff2d55" stroke-width="1" opacity=".2"/>
+      <!-- Jambes écartées (stance) -->
+      <rect x="52" y="160" width="14" height="12" rx="5" fill="#e8b88a"/>
+      <rect x="74" y="160" width="14" height="12" rx="5" fill="#e8b88a"/>
+      <rect x="50" y="168" width="18" height="8" rx="3" fill="#222"/>
+      <rect x="72" y="168" width="18" height="8" rx="3" fill="#222"/>
+      <!-- Sueur/effort -->
+      <path d="M44 55 Q42 60 44 65" stroke="#88ccff" stroke-width="1.5" fill="none" opacity=".5"/>
+      <path d="M96 52 Q98 57 96 62" stroke="#88ccff" stroke-width="1.5" fill="none" opacity=".5"/>
+    </svg>
+
+    <!-- TAKAMURA style - le mentor badass -->
+    <svg class="manga-char" viewBox="0 0 120 170" fill="none">
+      <!-- Body massif -->
+      <path d="M35 70 Q33 62 40 58 L80 58 Q87 62 85 70 L88 125 Q88 130 82 130 L38 130 Q32 130 32 125Z" fill="#d4956c"/>
+      <!-- Short doré champion -->
+      <path d="M30 125 L90 125 L92 155 Q92 158 86 158 L34 158 Q28 158 28 155Z" fill="#ffd700"/>
+      <rect x="30" y="123" width="60" height="6" rx="2" fill="#cc0000"/>
+      <!-- Ceinture de champion du monde -->
+      <rect x="30" y="120" width="60" height="7" rx="2" fill="#ffd700" stroke="#cc8800" stroke-width="1.5"/>
+      <circle cx="60" cy="123" r="3" fill="#cc0000"/>
+      <!-- Head -->
+      <circle cx="60" cy="38" r="23" fill="#d4956c"/>
+      <!-- Cheveux rasés sur les côtés -->
+      <path d="M37 30 Q40 15 60 12 Q80 15 83 30" fill="#111"/>
+      <path d="M42 30 Q45 18 60 15 Q75 18 78 30" fill="#222"/>
+      <!-- Cicatrice -->
+      <path d="M72 28 L78 38" stroke="#b07050" stroke-width="2" stroke-linecap="round"/>
+      <!-- Yeux intimidants -->
+      <path d="M46 36 L56 37" stroke="#111" stroke-width="3.5" stroke-linecap="round"/>
+      <path d="M64 37 L74 36" stroke="#111" stroke-width="3.5" stroke-linecap="round"/>
+      <ellipse cx="50" cy="40" rx="4" ry="3.5" fill="#fff"/>
+      <ellipse cx="70" cy="40" rx="4" ry="3.5" fill="#fff"/>
+      <circle cx="50" cy="40" r="2.5" fill="#1a0a00"/>
+      <circle cx="70" cy="40" r="2.5" fill="#1a0a00"/>
+      <circle cx="51" cy="39" r="1" fill="#fff"/>
+      <circle cx="71" cy="39" r="1" fill="#fff"/>
+      <!-- Sourire arrogant -->
+      <path d="M50 50 Q60 55 70 50" stroke="#333" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M68 49 L72 47" stroke="#333" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- Bras croisés -->
+      <path d="M35 68 Q30 75 38 85 Q48 90 60 85" stroke="#d4956c" stroke-width="14" fill="none" stroke-linecap="round"/>
+      <path d="M85 68 Q90 75 82 85 Q72 90 60 85" stroke="#d4956c" stroke-width="14" fill="none" stroke-linecap="round"/>
+      <!-- Gants posés -->
+      <circle cx="60" cy="88" r="8" fill="#cc0000"/>
+      <circle cx="48" cy="85" r="7" fill="#cc0000"/>
+      <!-- Jambes -->
+      <rect x="40" y="156" width="14" height="10" rx="4" fill="#d4956c"/>
+      <rect x="66" y="156" width="14" height="10" rx="4" fill="#d4956c"/>
+      <rect x="38" y="162" width="18" height="7" rx="3" fill="#222"/>
+      <rect x="64" y="162" width="18" height="7" rx="3" fill="#222"/>
+    </svg>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-num">62</div><div class="stat-label">Prospects</div></div>
+    <div class="stat-item"><div class="stat-num" style="color:var(--red)">12</div><div class="stat-label">Tres chaud</div></div>
+    <div class="stat-item"><div class="stat-num" style="color:var(--orange)">32</div><div class="stat-label">Chaud</div></div>
+    <div class="stat-item"><div class="stat-num" style="color:var(--yellow)">10</div><div class="stat-label">Tiede</div></div>
+    <div class="stat-item" style="border-color:rgba(0,229,255,.3)"><div class="stat-num" style="color:#00e5ff">&#127464;&#127469; 9</div><div class="stat-label">Suisse</div></div>
+  </div>
+</section>
+
+<div class="controls">
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" class="search" placeholder="Rechercher un nom ou une ville..." id="search">
+  </div>
+  <div class="filters">
+    <button class="active" data-filter="all">Tous (62)</button>
+    <button data-filter="france">&#127467;&#127479; France (53)</button>
+    <button data-filter="suisse">&#127464;&#127469; Suisse (9)</button>
+    <button data-filter="hot">&#128293; Tres chaud</button>
+    <button data-filter="warm">&#9832;&#65039; Chaud</button>
+    <button data-filter="mild">&#127780;&#65039; Tiede</button>
+    <button data-filter="cold">&#10052;&#65039; Froid</button>
+  </div>
+  <div class="count"><span id="total">53</span> prospects affiches</div>
+</div>
+
+<div class="list" id="list"></div>
+
+<script>
+var prospects = [
+  {n:"Central Comics",p:"09 52 78 22 71",a:"25 Rue de l'Ambroisie, 75012 Paris",r:4.7,rv:465,t:"hot"},
+  {n:"Asiance Village Manga",p:"06 85 03 05 90",a:"32 Rue des Lois, 31000 Toulouse",r:4.6,rv:304,t:"hot"},
+  {n:"Librairie BD FUGUE",p:"05 62 80 68 20",a:"11 Rue Sainte-Ursule, 31000 Toulouse",r:4.7,rv:339,t:"hot"},
+  {n:"Manga Evasion",p:"09 81 68 64 14",a:"50 Rue des Godrans, 21000 Dijon",r:4.7,rv:439,t:"hot"},
+  {n:"Level Games",p:"09 52 35 10 74",a:"30 Rue de l'Aspic, 30000 N\u00eemes",r:4.5,rv:238,t:"hot"},
+  {n:"Librairie Azu Manga",p:"02 47 05 87 13",a:"20 Rue du Commerce, 37000 Tours",r:4.6,rv:530,t:"hot"},
+  {n:"LaLudiKavern (Pau)",p:"05 59 12 46 05",a:"8 Rue de Foix, 64000 Pau",r:4.9,rv:304,t:"hot"},
+  {n:"Album Parinor",p:"09 62 33 43 54",a:"Centre commercial O' Parinor, 93606 Aulnay-sous-Bois",r:4.7,rv:330,t:"hot"},
+  {n:"Le Bidibul",p:"03 25 73 05 45",a:"18 Rue de la Monnaie, 10000 Troyes",r:4.8,rv:283,t:"hot"},
+  {n:"Game Corner",p:"01 55 42 03 95",a:"15 Rue Saint-Jacques, 75005 Paris",r:4.4,rv:205,t:"warm"},
+  {n:"Mangarake Lyon",p:"09 53 20 41 95",a:"31 Rue Victor Hugo, 69002 Lyon",r:4.4,rv:762,t:"warm"},
+  {n:"\u00d4Japon",p:"04 26 66 18 12",a:"13 Rue du Collet, 06300 Nice",r:4.8,rv:83,t:"warm"},
+  {n:"Geekko",p:"03 88 25 47 50",a:"16 Rue des Serruriers, 67000 Strasbourg",r:4.8,rv:83,t:"warm"},
+  {n:"LITTLE TOKYO STRASBOURG",p:"03 88 75 09 42",a:"24 Rue de la Fonderie, 67000 Strasbourg",r:4.4,rv:196,t:"warm"},
+  {n:"Librairie Bildergarte",p:"03 88 32 19 58",a:"27 Rue des Serruriers, 67000 Strasbourg",r:4.9,rv:123,t:"warm"},
+  {n:"Manga Shinrei",p:"09 87 77 17 56",a:"19 Rue du Mar\u00e9chal Lyautey, 59370 Mons-en-Bar\u0153ul",r:5.0,rv:59,t:"warm"},
+  {n:"Pikapop LE HAVRE",p:"02 35 30 20 06",a:"59 Av. Ren\u00e9 Coty, 76600 Le Havre",r:4.0,rv:163,t:"warm"},
+  {n:"Bd Lyrium",p:"02 35 22 42 51",a:"72 Rue Mar\u00e9chal Gallieni, 76600 Le Havre",r:4.7,rv:85,t:"warm"},
+  {n:"Exp\u00e9rience Bis",p:"04 78 03 56 92",a:"42 Rue Michel Servet, 69100 Villeurbanne",r:4.9,rv:169,t:"warm"},
+  {n:"Rythm'n BD",p:"02 43 57 77 64",a:"31 Rue nationale, 72100 Le Mans",r:4.8,rv:74,t:"warm"},
+  {n:"L'Antre Du Manga",p:"03 60 11 47 50",a:"9 Rue des Orf\u00e8vres, 80000 Amiens",r:4.6,rv:186,t:"warm"},
+  {n:"Bulles 2 papier",p:"05 55 10 89 10",a:"17 Rue Adrien Dubouche, 87000 Limoges",r:4.9,rv:96,t:"warm"},
+  {n:"Librairie Mine de rien",p:"03 81 50 43 45",a:"12 Rue Bersot, 25000 Besan\u00e7on",r:4.7,rv:66,t:"warm"},
+  {n:"Mangarake Caen",p:"09 79 03 22 51",a:"41 Rue de Bras, 14000 Caen",r:4.7,rv:66,t:"warm"},
+  {n:"Kalimanga",p:"03 89 50 07 56",a:"136 Rue de Richwiller, 68260 Kingersheim",r:4.6,rv:65,t:"warm"},
+  {n:"manga uchu",p:"09 88 52 62 76",a:"65 Rte de Bayonne, 64140 Bill\u00e8re",r:4.9,rv:107,t:"warm"},
+  {n:"Amazin'",p:"04 86 81 93 18",a:"60 Rue des Fourbisseurs, 84000 Avignon",r:4.7,rv:199,t:"warm"},
+  {n:"La Crognote Rieuse",p:"04 90 85 36 74",a:"40 Rue de la Bonneterie, 84000 Avignon",r:4.9,rv:132,t:"warm"},
+  {n:"La Licorne",p:"04 86 81 00 90",a:"64 Rue des Fourbisseurs, 84000 Avignon",r:4.6,rv:148,t:"warm"},
+  {n:"Level Games (Avignon)",p:"04 90 89 99 27",a:"20 Rue de la Bonneterie, 84000 Avignon",r:4.5,rv:121,t:"warm"},
+  {n:"BULLE DE JEUX COLOMBES",p:"01 56 83 27 70",a:"68 Rue Saint-Denis, 92700 Colombes",r:4.8,rv:169,t:"warm"},
+  {n:"Manga'F\u00e9",p:"09 56 76 02 66",a:"22 Rue Raymond Poincar\u00e9, 68250 Rouffach",r:4.9,rv:81,t:"warm"},
+  {n:"Mon Chat Pitre Colmar",p:"06 95 24 40 90",a:"5 Pl. Sainte-Catherine, 68000 Colmar",r:4.9,rv:112,t:"warm"},
+  {n:"Bulles d'encre",p:"05 49 62 32 16",a:"63 Rue de la Cath\u00e9drale, 86000 Poitiers",r:4.7,rv:183,t:"warm"},
+  {n:"Arkenstore",p:"09 83 62 05 19",a:"3 Rue du Chaudron d'Or, 86000 Poitiers",r:4.9,rv:123,t:"warm"},
+  {n:"Mangarake Challans",p:"09 87 40 14 83",a:"24 Rue Gambetta, 85300 Challans",r:4.8,rv:154,t:"warm"},
+  {n:"Figurine Passion",p:"05 62 90 04 63",a:"13 Rue Gaston Dreyt, 65000 Tarbes",r:4.4,rv:52,t:"warm"},
+  {n:"LaLudiKavern (Tarbes)",p:"05 62 51 16 48",a:"4 Rue Brauhauban, 65000 Tarbes",r:4.7,rv:51,t:"warm"},
+  {n:"Destinationtoys",p:"04 86 97 25 11",a:"45 Rue Roger Brun, 13005 Marseille",r:4.1,rv:42,t:"mild"},
+  {n:"Format Pop",p:"06 29 61 07 74",a:"36 Rue Saint-Nicolas, 59800 Lille",r:5.0,rv:34,t:"mild"},
+  {n:"Librairie Manga Shoten",p:"06 49 34 14 46",a:"15 Rue des Marchands, 30000 N\u00eemes",r:5.0,rv:26,t:"mild"},
+  {n:"Librairie Tsuneko",p:"02 47 05 85 81",a:"4 Rue du Commerce, 37000 Tours",r:5.0,rv:24,t:"mild"},
+  {n:"Manga Nakama",p:"07 64 42 01 76",a:"54 Rue Charles de Gaulle, 95170 Deuil-la-Barre",r:5.0,rv:30,t:"mild"},
+  {n:"BULLE DE JEUX LE RAINCY",p:"09 86 36 63 00",a:"37 Av. de la R\u00e9sistance, 93340 Le Raincy",r:4.9,rv:41,t:"mild"},
+  {n:"Librairie Le Kitsune",p:"03 25 46 34 47",a:"38 Rue Claude Huez, 10000 Troyes",r:4.9,rv:42,t:"mild"},
+  {n:"Le Temple des Geeks",p:"05 59 29 71 13",a:"3 Av. du Portou, 64990 Bayonne",r:4.3,rv:27,t:"mild"},
+  {n:"Mangas Fantaisie",p:"06 13 50 53 35",a:"27 Rue Keller, 75011 Paris",r:4.5,rv:4,t:"cold"},
+  {n:"Magma Manga",p:"03 88 96 36 01",a:"81 Grand'Rue, 67000 Strasbourg",r:4.9,rv:16,t:"cold"},
+  {n:"Boutique de G.trouvetou",p:"09 72 89 03 39",a:"16 Rue de la Juiverie, 72100 Le Mans",r:4.6,rv:7,t:"cold"},
+  {n:"GEEKORIUM",p:"02 47 05 38 14",a:"68 Rue Colbert, 37000 Tours",r:5.0,rv:4,t:"cold"},
+  {n:"MANGAS & FIGURINE",p:"07 75 13 30 81",a:"77 Rue d'Amiens, 76000 Rouen",r:5.0,rv:1,t:"cold"},
+  {n:"Terra Manga",p:"09 86 20 17 97",a:"74 Rue d'Amiens, 76000 Rouen",r:5.0,rv:18,t:"cold"},
+  {n:"\ud83c\udde8\ud83c\udded ANIMSHOP Lausanne",p:"021 311 15 11",a:"Rue Adrien-Pichard 9, 1003 Lausanne",r:4.9,rv:245,t:"hot"},
+  {n:"\ud83c\udde8\ud83c\udded Dadix Sagl",p:"091 921 09 10",a:"Via Pietro Peri 6, 6900 Lugano",r:4.6,rv:225,t:"hot"},
+  {n:"\ud83c\udde8\ud83c\udded Log On Games",p:"021 922 55 66",a:"Rue des Chenevi\u00e8res 21, 1800 Vevey",r:4.8,rv:356,t:"hot"},
+  {n:"\ud83c\udde8\ud83c\udded ANIMSHOP Z\u00fcrich",p:"044 281 08 88",a:"Kalanderpl. 1, 8045 Z\u00fcrich",r:4.9,rv:105,t:"warm"},
+  {n:"\ud83c\udde8\ud83c\udded Media Zone.TV S\u00e0rl",p:"032 724 27 50",a:"Rue de l'\u00c9cluse 27, 2000 Neuch\u00e2tel",r:4.5,rv:89,t:"warm"},
+  {n:"\ud83c\udde8\ud83c\udded \u00c0 toi de jouer",p:"032 710 12 22",a:"Rue des Terreaux 2, 2000 Neuch\u00e2tel",r:4.7,rv:75,t:"warm"},
+  {n:"\ud83c\udde8\ud83c\udded Animart",p:"026 543 46 08",a:"Rue de Lausanne 39, 1700 Fribourg",r:5.0,rv:27,t:"mild"},
+  {n:"\ud83c\udde8\ud83c\udded Boutique Du Phuoc",p:"027 323 64 81",a:"Galeries S\u00e9dunoises, Av. de la Gare 17A, 1950 Sion",r:4.1,rv:38,t:"mild"},
+  {n:"\ud83c\udde8\ud83c\udded Bankai adventures s\u00e0rl",p:"024 438 01 88",a:"Rue des Remparts 11, 1400 Yverdon",r:0,rv:0,t:"cold"}
+];
+
+var labels = {hot:"\ud83d\udd25 TRES CHAUD",warm:"\u2668\ufe0f CHAUD",mild:"\ud83c\udf24\ufe0f TIEDE",cold:"\u2744\ufe0f FROID"};
+var listEl = document.getElementById("list");
+var searchEl = document.getElementById("search");
+var totalEl = document.getElementById("total");
+var filter = "all";
+
+function isSuisse(p) {
+  return p.n.indexOf("\ud83c\udde8\ud83c\udded") === 0;
+}
+
+function render() {
+  var q = searchEl.value.toLowerCase();
+  var filtered = prospects.filter(function(p) {
+    if (filter === "france" && isSuisse(p)) return false;
+    if (filter === "suisse" && !isSuisse(p)) return false;
+    if (filter !== "all" && filter !== "france" && filter !== "suisse" && p.t !== filter) return false;
+    if (q && p.n.toLowerCase().indexOf(q) === -1 && p.a.toLowerCase().indexOf(q) === -1) return false;
+    return true;
+  });
+  totalEl.textContent = filtered.length;
+  var html = "";
+  for (var i = 0; i < filtered.length; i++) {
+    var p = filtered[i];
+    var stars = "";
+    for (var s = 0; s < Math.floor(p.r); s++) stars += "\u2605";
+    var tel = p.p.replace(/\s/g, "");
+    html += '<div class="card ' + p.t + '-card">' +
+      '<div class="card-num">' + (i+1) + '</div>' +
+      '<div class="card-info">' +
+        '<div class="card-name">' + p.n + '</div>' +
+        '<div class="card-addr">' + p.a + '</div>' +
+        '<div class="card-meta">' +
+          '<span class="card-stars">' + stars + ' ' + p.r + '</span>' +
+          '<span class="card-reviews">' + p.rv + ' avis</span>' +
+          '<span class="card-badge badge-' + p.t + '">' + labels[p.t] + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<a href="tel:' + tel + '" class="card-phone">' +
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>' +
+        p.p +
+      '</a>' +
+    '</div>';
+  }
+  listEl.innerHTML = html;
+}
+
+document.querySelectorAll(".filters button").forEach(function(btn) {
+  btn.addEventListener("click", function() {
+    document.querySelector(".filters .active").classList.remove("active");
+    btn.classList.add("active");
+    filter = btn.dataset.filter;
+    render();
+  });
+});
+searchEl.addEventListener("input", render);
+render();
+
+// Particles
+var canvas = document.getElementById("mangaBg");
+var ctx = canvas.getContext("2d");
+function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+resize();
+addEventListener("resize", resize);
+var colors = ["#ff2d55","#00e5ff","#ffd700","#9d4edd","#ff69b4"];
+var particles = [];
+for (var i = 0; i < 60; i++) {
+  particles.push({
+    x: Math.random()*innerWidth, y: Math.random()*innerHeight,
+    vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5,
+    r: Math.random()*2+0.5,
+    color: colors[Math.floor(Math.random()*5)],
+    alpha: Math.random()*0.3+0.05
+  });
+}
+function animateParticles() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  for (var i = 0; i < particles.length; i++) {
+    var p = particles[i];
+    p.x += p.vx; p.y += p.vy;
+    if (p.x < 0) p.x = canvas.width;
+    if (p.x > canvas.width) p.x = 0;
+    if (p.y < 0) p.y = canvas.height;
+    if (p.y > canvas.height) p.y = 0;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = p.alpha;
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// Boom on click
+var booms = ["K.O.!","DEMPSEY ROLL!","UPPERCUT!","SMASH!","GAZELLE PUNCH!","CROSS COUNTER!","JOLT BLOW!"];
+document.addEventListener("click", function(e) {
+  if (e.target.closest(".card-phone") || e.target.closest(".filters button")) {
+    var el = document.createElement("div");
+    el.className = "boom";
+    el.textContent = booms[Math.floor(Math.random()*booms.length)];
+    el.style.left = (e.clientX - 40) + "px";
+    el.style.top = (e.clientY - 40) + "px";
+    document.body.appendChild(el);
+    setTimeout(function() { el.remove(); }, 700);
+  }
+});
+</script>
+</body>
+</html>

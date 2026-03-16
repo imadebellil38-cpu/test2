@@ -8,19 +8,19 @@
   <style>
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      --bg: #03050f;
-      --surface: #060c1e;
-      --card: #0b1128;
-      --border: #1a2040;
-      --border2: #232b4a;
-      --grad: linear-gradient(135deg, #ef4444 0%, #e11d48 60%, #f97316 100%);
-      --blue: #ef4444;
-      --purple: #e11d48;
-      --teal: #f97316;
-      --text: #e8eaf6;
-      --text2: #8892b0;
-      --muted: #4a5268;
-      --dim: #6b7394;
+      --bg: #ffffff;
+      --surface: #f8f8fa;
+      --card: #ffffff;
+      --border: rgba(0,0,0,.07);
+      --border2: rgba(0,0,0,.12);
+      --grad: linear-gradient(135deg, #e06030 0%, #f0915a 100%);
+      --blue: #1863DC;
+      --purple: #e06030;
+      --teal: #f0915a;
+      --text: #0f0f0f;
+      --text2: #555555;
+      --muted: #999999;
+      --dim: #888888;
     }
     body {
       background: var(--bg); color: var(--text);
@@ -131,7 +131,7 @@
     .plan-features li {
       padding: .4rem 0; font-size: .84rem; color: var(--text2);
       display: flex; align-items: center; gap: .5rem;
-      border-bottom: 1px solid rgba(255,255,255,.03);
+      border-bottom: 1px solid rgba(0,0,0,.02);
     }
     .plan-features li:last-child { border-bottom: none; }
     .plan-features li::before {

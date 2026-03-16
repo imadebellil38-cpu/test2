@@ -513,6 +513,24 @@ Réponds UNIQUEMENT en JSON, un tableau avec le numéro et le nom trouvé (vide 
   }
 });
 
+// GET /api/search/history — return past searches for the user
+router.get('/history', (req, res) => {
+  const userId = req.user.id;
+  try {
+    const rows = db.prepare(`
+      SELECT id, niche, country, search_mode as mode, results_count, created_at
+      FROM searches
+      WHERE user_id = ?
+      ORDER BY created_at DESC
+      LIMIT 20
+    `).all(userId);
+    res.json({ history: rows });
+  } catch (err) {
+    console.error('[SEARCH] History error:', err.message);
+    res.status(500).json({ error: 'Erreur chargement historique.' });
+  }
+});
+
 // GET /api/search/modes — return available search modes
 router.get('/modes', (req, res) => {
   res.json({

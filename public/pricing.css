@@ -1,22 +1,22 @@
 /* ProspectHunter — Pricing Page Styles */
 
 body {
-  background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,100,200,.15) 0%, transparent 70%);
+  background-image: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(224,96,48,.04) 0%, transparent 70%);
 }
 
 header {
-  height: 64px; background: rgba(2,11,24,.85); backdrop-filter: blur(20px);
+  height: 64px; background: rgba(255,255,255,.88); backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border); padding: 0 2rem;
   display: flex; align-items: center; gap: 1rem;
 }
 .logo-icon {
   width: 34px; height: 34px;
-  background: linear-gradient(135deg, var(--cyan), #0080c8);
+  background: linear-gradient(135deg, #e06030, #f0915a);
   border-radius: 9px; display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 0 18px rgba(0,200,248,.3);
+  box-shadow: 0 0 18px rgba(224,96,48,.2);
 }
 .logo-text { font-size: 1.15rem; font-weight: 800; letter-spacing: -.4px; }
-.logo-text span { color: var(--cyan); }
+.logo-text span { color: #e06030; }
 .hdr-btn {
   margin-left: auto; padding: 6px 18px; border-radius: 8px;
   background: var(--surface); border: 1px solid var(--border2);
@@ -24,7 +24,7 @@ header {
   text-decoration: none; cursor: pointer; font-family: inherit;
   transition: all .15s;
 }
-.hdr-btn:hover { border-color: var(--cyan); color: var(--cyan); }
+.hdr-btn:hover { border-color: #e06030; color: #e06030; }
 
 .page { max-width: 1000px; margin: 0 auto; padding: 3rem 1.5rem; }
 
@@ -48,21 +48,21 @@ header {
   display: flex; flex-direction: column;
   transition: all .2s;
 }
-.plan-card:hover { border-color: var(--cyan); transform: translateY(-4px); }
+.plan-card:hover { border-color: #e06030; transform: translateY(-4px); }
 .plan-card.popular {
-  border-color: var(--cyan);
+  border-color: #e06030;
   box-shadow: 0 0 40px rgba(0,200,248,.12);
   position: relative;
 }
 .popular-tag {
   position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-  background: var(--cyan); color: #000; font-size: .7rem; font-weight: 800;
+  background: #e06030; color: #000; font-size: .7rem; font-weight: 800;
   padding: 3px 16px; border-radius: 999px; text-transform: uppercase;
   letter-spacing: .05em;
 }
 
 .plan-name { font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: .5rem; }
-.plan-name.pro { color: var(--cyan); }
+.plan-name.pro { color: #e06030; }
 .plan-name.enterprise { color: var(--purple); }
 
 .plan-price { font-size: 2.5rem; font-weight: 900; margin-bottom: .25rem; }
@@ -98,9 +98,9 @@ header {
   background: var(--surface); border: 1px solid var(--border2);
   color: var(--text2);
 }
-.btn-plan.free:hover { border-color: var(--cyan); color: var(--cyan); }
+.btn-plan.free:hover { border-color: #e06030; color: #e06030; }
 .btn-plan.pro {
-  background: linear-gradient(135deg, var(--cyan), #0090d0);
+  background: linear-gradient(135deg, #e06030, #e87848);
   color: #000; box-shadow: 0 4px 20px rgba(0,200,248,.25);
 }
 .btn-plan.pro:hover { box-shadow: 0 4px 30px rgba(0,200,248,.4); }
