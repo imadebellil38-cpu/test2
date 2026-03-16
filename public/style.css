@@ -185,7 +185,7 @@ header {
 .btn-notif {
   padding: .5rem 1rem; border-radius: 8px;
   background: rgba(59,130,246,.1); border: 1px solid rgba(59,130,246,.3);
-  color: #60a5fa; font-size: .82rem; font-weight: 600;
+  color: #2563eb; font-size: .82rem; font-weight: 600;
   transition: all .15s; white-space: nowrap; flex-shrink: 0;
 }
 .btn-notif:hover { background: rgba(59,130,246,.2); }
@@ -201,7 +201,7 @@ header {
   margin-bottom: .65rem; padding-left: .1rem;
 }
 .rappel-section-title.rappel-urgent { color: #a83535; }
-.rappel-section-title.rappel-soon   { color: #fb923c; }
+.rappel-section-title.rappel-soon   { color: #c2410c; }
 
 .rappel-list { display: flex; flex-direction: column; gap: .5rem; }
 
@@ -223,7 +223,7 @@ header {
 
 .rappel-card-date { flex-shrink: 0; font-size: .78rem; font-weight: 700; }
 .rappel-date-urgent { color: #a83535; }
-.rappel-date-soon   { color: #fb923c; }
+.rappel-date-soon   { color: #c2410c; }
 .rappel-date-later  { color: var(--stage-cold); }
 
 .rappel-empty {
@@ -710,7 +710,7 @@ main {
   font-size: .65rem; font-weight: 600; white-space: nowrap;
 }
 .sig-nosite { background: rgba(200,70,70,.1);   border: 1px solid rgba(200,70,70,.25);   color: #a83535; }
-.sig-nofb   { background: rgba(59,130,246,.1);  border: 1px solid rgba(59,130,246,.25);  color: #60a5fa; }
+.sig-nofb   { background: rgba(59,130,246,.1);  border: 1px solid rgba(59,130,246,.25);  color: #2563eb; }
 .sig-noig   { background: rgba(168,85,247,.1);  border: 1px solid rgba(168,85,247,.25);  color: #c084fc; }
 .sig-notk   { background: rgba(20,184,166,.1);  border: 1px solid rgba(20,184,166,.25);  color: #2dd4bf; }
 
@@ -726,7 +726,7 @@ main {
 .heat-badge:hover { transform: scale(1.05); }
 .heat-burning {
   background: linear-gradient(135deg, rgba(200,70,70,.2), rgba(245,158,11,.15));
-  border: 1.5px solid rgba(200,70,70,.5); color: #d08080;
+  border: 1.5px solid rgba(200,70,70,.5); color: #a83535;
   animation: pulse-glow 2s infinite;
 }
 .heat-hot {
@@ -735,7 +735,7 @@ main {
 }
 .heat-warm {
   background: rgba(234,179,8,.1); border: 1.5px solid rgba(234,179,8,.3);
-  color: #fde68a;
+  color: #b45309;
 }
 .heat-cold {
   background: rgba(224,96,48,.08); border: 1.5px solid rgba(224,96,48,.2);
@@ -837,7 +837,7 @@ main {
   display: inline-flex; align-items: center; gap: .32rem;
   padding: .4rem .8rem; border-radius: 20px;
   background: rgba(99,102,241,.12); border: 1.5px solid rgba(99,102,241,.3);
-  color: #f0915a; font-size: .78rem; font-weight: 600;
+  color: #c05020; font-size: .78rem; font-weight: 600;
   white-space: nowrap; transition: all .15s; cursor: pointer;
 }
 .btn-fiche:hover {
@@ -851,7 +851,7 @@ main {
   display: inline-flex; align-items: center; gap: .35rem;
   padding: .32rem .7rem; border-radius: 8px;
   background: rgba(224,96,48,.1); border: 1.5px solid rgba(224,96,48,.3);
-  color: #f0915a; font-size: .81rem; font-weight: 700;
+  color: #c05020; font-size: .81rem; font-weight: 700;
   text-decoration: none; white-space: nowrap;
   transition: all .18s; cursor: pointer; position: relative; overflow: hidden;
 }
@@ -1045,8 +1045,8 @@ tbody tr[data-stage="refused"]           { border-left: 3px solid var(--stage-re
 ───────────────────────────────────────── */
 .modal-overlay {
   position: fixed; inset: 0; z-index: 500;
-  background: rgba(0,0,0,.82);
-  backdrop-filter: blur(10px);
+  background: rgba(0,0,0,.35);
+  backdrop-filter: blur(8px);
   display: none;
   align-items: center; justify-content: center;
   padding: 1rem;
@@ -1054,10 +1054,10 @@ tbody tr[data-stage="refused"]           { border-left: 3px solid var(--stage-re
 .modal-overlay.open { display: flex; }
 
 .modal {
-  background: rgba(10, 8, 28, .95);
-  border: 1px solid rgba(224,96,48,.25);
+  background: #fff;
+  border: 1px solid rgba(0,0,0,.08);
   border-radius: 20px;
-  box-shadow: 0 25px 80px rgba(0,0,0,.7), 0 0 0 1px rgba(224,96,48,.1), inset 0 1px 0 rgba(0,0,0,.03);
+  box-shadow: 0 25px 80px rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.04);
   width: 100%; max-width: 640px;
   max-height: 90vh; overflow-y: auto;
   animation: scaleIn .2s cubic-bezier(.16,1,.3,1);
@@ -1225,8 +1225,8 @@ tbody tr[data-stage="refused"]           { border-left: 3px solid var(--stage-re
   display: flex; align-items: center; gap: .6rem;
   padding: .75rem 1.1rem; border-radius: 10px;
   font-size: .82rem; font-weight: 600;
-  background: var(--card); border: 1px solid var(--border2);
-  color: var(--text); box-shadow: 0 4px 24px rgba(0,0,0,.45);
+  background: #fff; border: 1px solid rgba(0,0,0,.08);
+  color: var(--text); box-shadow: 0 4px 24px rgba(0,0,0,.08);
   animation: toastIn .25s cubic-bezier(.16,1,.3,1);
   max-width: 320px;
 }
@@ -1473,7 +1473,7 @@ tbody tr[data-stage="refused"]           { border-left: 3px solid var(--stage-re
 
 .hour-overdue .agenda-hour { color: #c84646; }
 .hour-meeting .agenda-hour { color: #f97316; }
-.hour-recall  .agenda-hour { color: #60a5fa; }
+.hour-recall  .agenda-hour { color: #2563eb; }
 
 .agenda-content { flex: 1; min-width: 0; }
 .agenda-top-row { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; margin-bottom: .3rem; }
@@ -1485,7 +1485,7 @@ tbody tr[data-stage="refused"]           { border-left: 3px solid var(--stage-re
 }
 .tag-overdue { background: rgba(200,70,70,.2);  color: #c84646; }
 .tag-meeting { background: rgba(249,115,22,.2); color: #f97316; }
-.tag-recall  { background: rgba(96,165,250,.2); color: #60a5fa; }
+.tag-recall  { background: rgba(96,165,250,.2); color: #2563eb; }
 
 .agenda-phone {
   display: inline-block; font-size: .82rem; color: var(--text-muted);
@@ -1542,13 +1542,13 @@ tbody tr[data-stage="refused"]           { border-left: 3px solid var(--stage-re
   display: inline-flex; align-items: center; gap: .3rem;
   margin-top: .35rem; padding: .2rem .6rem;
   background: rgba(96,165,250,.1); border: 1px solid rgba(96,165,250,.25);
-  border-radius: 6px; color: #60a5fa; font-size: .75rem; font-weight: 600;
+  border-radius: 6px; color: #2563eb; font-size: .75rem; font-weight: 600;
   cursor: pointer; transition: background .15s;
 }
 .notes-peek-btn:hover { background: rgba(96,165,250,.2); }
 .notes-preview {
   margin-top: .4rem; padding: .5rem .7rem;
-  background: var(--surface2); border-left: 3px solid #60a5fa;
+  background: var(--surface2); border-left: 3px solid #2563eb;
   border-radius: 0 8px 8px 0; font-size: .8rem; color: var(--text2);
   white-space: pre-wrap; max-width: 320px; line-height: 1.5;
 }
@@ -1620,11 +1620,11 @@ tbody tr[data-stage="refused"]           { border-left: 3px solid var(--stage-re
 }
 .mass-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,.06); }
 .mass-btn-ia { border-color: rgba(224,96,48,.3); }
-.mass-btn-ia:hover { background: rgba(224,96,48,.1); color: #f0915a; border-color: rgba(224,96,48,.5); }
+.mass-btn-ia:hover { background: rgba(224,96,48,.1); color: #c05020; border-color: rgba(224,96,48,.5); }
 .mass-btn-excel { border-color: rgba(34,197,94,.25); }
-.mass-btn-excel:hover { background: rgba(34,197,94,.08); color: #86efac; border-color: rgba(34,197,94,.4); }
+.mass-btn-excel:hover { background: rgba(34,197,94,.08); color: #16a34a; border-color: rgba(34,197,94,.4); }
 .mass-btn-pdf { border-color: rgba(200,70,70,.25); }
-.mass-btn-pdf:hover { background: rgba(200,70,70,.08); color: #d08080; border-color: rgba(200,70,70,.4); }
+.mass-btn-pdf:hover { background: rgba(200,70,70,.08); color: #a83535; border-color: rgba(200,70,70,.4); }
 
 /* ══════════════════════════════════════════
    PREVIOUS SEARCHES SECTION
@@ -1660,7 +1660,7 @@ tbody tr[data-stage="refused"]           { border-left: 3px solid var(--stage-re
 .prev-search-count {
   font-size: .72rem; font-weight: 800; padding: .15rem .5rem;
   border-radius: 6px; background: rgba(224,96,48,.12);
-  color: #f0915a; border: 1px solid rgba(224,96,48,.25);
+  color: #c05020; border: 1px solid rgba(224,96,48,.25);
 }
 .prev-search-empty { font-size: .82rem; color: var(--text2); padding: .5rem 0; text-align: center; }
 
@@ -1673,7 +1673,7 @@ tbody tr[data-stage="refused"]           { border-left: 3px solid var(--stage-re
   cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: .3rem;
   transition: all .2s;
 }
-.hdr-btn-admin:hover { background: rgba(224,96,48,.1); color: #f0915a; border-color: rgba(224,96,48,.4); }
+.hdr-btn-admin:hover { background: rgba(224,96,48,.1); color: #c05020; border-color: rgba(224,96,48,.4); }
 
 /* ══════════════════════════════════════════
    SIGNAL FILTERS BAR
