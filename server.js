@@ -109,7 +109,13 @@ app.use((err, req, res, next) => {
 });
 
 // ── Start ──
-app.listen(PORT, () => {
+const http = require('http');
+const server = http.createServer(app);
+server.listen(PORT, () => {
   console.log(`\x1b[36m⚡ ProspectHunter SaaS\x1b[0m démarré sur \x1b[4mhttp://localhost:${PORT}\x1b[0m`);
   console.log(`   Mode: ${isProd ? 'production' : 'development'} | Rate limit: ${process.env.RATE_LIMIT_MAX_REQUESTS || 100} req/15min`);
+});
+server.on('error', (err) => {
+  console.error('\x1b[31m[ERROR] Impossible de démarrer le serveur:\x1b[0m', err.message);
+  process.exit(1);
 });
